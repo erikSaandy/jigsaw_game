@@ -71,8 +71,10 @@ public partial class JigsawGame : GameManager
 		base.ClientJoined( client );
 
 		// Create a pawn for this client to play with
-		var pawn = new Pawn();
+		var pawn = new JigsawPawn();
 		client.Pawn = pawn;
+		pawn.Respawn();
+		pawn.DressFromClient( client );
 
 		// Get all of the spawnpoints
 		var spawnpoints = Entity.All.OfType<SpawnPoint>();

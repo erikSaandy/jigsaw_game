@@ -1,4 +1,5 @@
-﻿using Saandy;
+﻿using jigsaw;
+using Saandy;
 using Sandbox;
 using System;
 using System.Collections.Generic;
@@ -6,19 +7,18 @@ using System.Collections.Immutable;
 using System.Linq;
 
 namespace Jigsaw;
-
 public partial class JigsawGame : GameManager
 {
 
 	// All PuzzlePiece entities (NETWORKED)
-	[Net] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
+	[Net, Predicted] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
 
 	// All piece models (CLIENT)
-	public Model[] PieceModels { get; set; } = null;
+	public Model[] PieceModels { get; set; } = null;		
 
 	// // //
 
-	[Net] public string PuzzleTextureURL { get; set; } = "https://previews.dropbox.com/p/thumb/AB4i65-H6QmvrFcgZSheLt4cE4evHLO7IaZEpSvh7cr0732SjmfGJJiP1lnLyEHrCOelc8CIX13FGk3QSC_cyTRyUFAvDArR1gHCVoyaKTyqPK52LrWwk8SjzBku20NvMqJsF9ZWIYrPR0T8x6282QIQswCqamGVyV3XWG7QhwnpNtpnz0M9nJZL1iBNf8fA3ciE8DYwYdMeGFkz9N0jrV4gmLfJ7BDDYijp0qMJ0EnXv-_0MYXx99xzgaqP8VxfYa1Il0_LVpjl65gLziYDa13omM5w4AMDWu-guN-btyAc8ip1IqWpxRLZn46GSBIhZ6BDlEzfxGFXMgnK8UmV4x4yuHw8eNCtOqup9mLmIjLNDFSFB_FF8QDGpk1N51ExGFg/p.png";
+	[Net] public string PuzzleTextureURL { get; set; } = "https://i.ytimg.com/vi/WFybyXo7L7w/maxresdefault.jpg";
 	public Texture PuzzleTexture { get; private set; } = null;
 
 	public Material PuzzleMaterial { get; private set; } = null;
@@ -62,8 +62,8 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsClient ) return;
 
 		// Load texture on server.
-		PuzzleTexture = await Texture.LoadAsync( FileSystem.Mounted, "textures/kittens.png" ); 
-		//Texture.LoadAsync( null, PuzzleTextureURL );
+		//PuzzleTexture = await Texture.LoadAsync( FileSystem.Mounted, "textures/kittens.png" );   
+		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
 
 		if ( PuzzleTexture == null ) { OnPuzzleTextureLoadFailed(); return; }
 
@@ -112,7 +112,6 @@ public partial class JigsawGame : GameManager
 			else
 			{
 				// TODO: Use navmesh here
-				Log.Warning( "There are no piece spawn points for this map! Piling in map center." );
 			}
 
 			PieceEntities[i] = ent; 
@@ -158,7 +157,8 @@ public partial class JigsawGame : GameManager
 
 		PuzzleTexture = null;
 		// Load texture on client.
-		PuzzleTexture = Texture.Load( FileSystem.Mounted, "textures/kittens.png" );
+		//PuzzleTexture = Texture.Load( FileSystem.Mounted, "textures/kittens.png" );
+		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
 
 		// Load materials.
 		LoadPuzzleMaterials();

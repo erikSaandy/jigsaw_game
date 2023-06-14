@@ -90,6 +90,7 @@ public partial class JigsawGame : GameManager
 			PieceCountY /= 2;
 		}
 
+
 		pieceCount = PieceCountX * PieceCountY;
 	}
 

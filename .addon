@@ -27,6 +27,93 @@
     "ProjectTemplate": null,
     "CsProjName": "",
     "HttpAllowList": null,
-    "ParentPackage": "local.jigsaw#local"
+    "ParentPackage": "local.jigsaw#local",
+    "Collision": {
+      "Defaults": {
+        "solid": "Collide",
+        "trigger": "Trigger",
+        "ladder": "Ignore",
+        "water": "Trigger",
+        "puzzlepiece": "Collide",
+        "player": "Collide"
+      },
+      "Pairs": [
+        {
+          "a": "solid",
+          "b": "solid",
+          "r": "Collide"
+        },
+        {
+          "a": "trigger",
+          "b": "playerclip",
+          "r": "Ignore"
+        },
+        {
+          "a": "trigger",
+          "b": "solid",
+          "r": "Trigger"
+        },
+        {
+          "a": "solid",
+          "b": "trigger",
+          "r": "Collide"
+        },
+        {
+          "a": "playerclip",
+          "b": "solid",
+          "r": "Collide"
+        },
+        {
+          "a": "solid",
+          "b": "puzzlepiece",
+          "r": "Collide"
+        },
+        {
+          "a": "trigger",
+          "b": "puzzlepiece",
+          "r": "Collide"
+        },
+        {
+          "a": "ladder",
+          "b": "puzzlepiece",
+          "r": "Collide"
+        },
+        {
+          "a": "water",
+          "b": "puzzlepiece",
+          "r": "Collide"
+        },
+        {
+          "a": "puzzlepiece",
+          "b": "puzzlepiece",
+          "r": "Collide"
+        },
+        {
+          "a": "player",
+          "b": "player",
+          "r": "Collide"
+        },
+        {
+          "a": "water",
+          "b": "player",
+          "r": "Collide"
+        },
+        {
+          "a": "ladder",
+          "b": "player",
+          "r": "Collide"
+        },
+        {
+          "a": "trigger",
+          "b": "player",
+          "r": "Collide"
+        },
+        {
+          "a": "solid",
+          "b": "player",
+          "r": "Collide"
+        }
+      ]
+    }
   }
 }
