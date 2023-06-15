@@ -1,7 +1,7 @@
 {
-  "Title": "Jigsaw",
+  "Title": "Jigsaw Game",
   "Type": "game",
-  "Org": "local",
+  "Org": "saandy",
   "Ident": "jigsaw",
   "Tags": null,
   "Schema": 1,
@@ -27,7 +27,7 @@
     "ProjectTemplate": null,
     "CsProjName": "",
     "HttpAllowList": null,
-    "ParentPackage": "local.jigsaw#local",
+    "ParentPackage": "",
     "Collision": {
       "Defaults": {
         "solid": "Collide",
@@ -85,8 +85,7 @@
         },
         {
           "a": "puzzlepiece",
-          "b": "puzzlepiece",
-          "r": "Collide"
+          "b": "puzzlepiece"
         },
         {
           "a": "player",
@@ -114,6 +113,9 @@
           "r": "Collide"
         }
       ]
-    }
+    },
+    "Summary": "Build jigsaw puzzles together with friends!",
+    "Description": "Join your friends in searching the world for puzzle pieces, bringing them together to complete a picture!",
+    "Public": false
   }
 }

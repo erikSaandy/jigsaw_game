@@ -26,6 +26,9 @@ public partial class PuzzlePiece : ModelEntity
 	[Net, Predicted]
 	public JigsawPawn HeldBy { get; set; } = null;
 
+	private readonly int ConnectionDistance = 4;
+	public bool ConnectedLeft, ConnectedRight, ConnectedTop, ConnectedBottom = false;
+
 	/// <summary>
 	/// Called when the entity is first created 
 	/// </summary>
@@ -95,6 +98,150 @@ public partial class PuzzlePiece : ModelEntity
 			DebugOverlay.Line( center, center + (Transform.Rotation.Up * 32), Color.Green );
 
 		}
+	}
+
+	public void CheckForConnections()
+	{
+		if(GetRoot() != this ) { GetRoot().CheckForConnections(); return; }
+
+		// This is root
+		PuzzlePiece neighbor = null;
+
+		if( FindNeighbor(out neighbor ) ) { ConnectToPiece( neighbor ); return; }
+
+		foreach(PuzzlePiece c in Children)
+		{
+			if ( c.FindNeighbor( out neighbor ) ) { ConnectToPiece( neighbor ); return; }
+		}
+	}
+
+	private bool FindNeighbor(out PuzzlePiece neighbor)
+	{
+		int scale = JigsawGame.PieceScale;
+		float dot = 0;
+
+		//DebugOverlay.Line( Position, Position + (Transform.Rotation.Backward * scale), Color.Green );
+		if ( GetNeighbor( -1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
+
+
+		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.Green ); }
+		if ( !ConnectedTop && neighbor != null && dot >= 0.95f )
+		{
+			if ( (Position + (Transform.Rotation.Backward * scale) - neighbor.Position).Length < ConnectionDistance )
+			{
+				//if ( connectPhysically ) { ConnectToPiece( -1, 0 ); return true; }
+				//else if ( root != neighbor.root ) { return false; }
+
+				ConnectedTop = true;
+				neighbor.ConnectedBottom = true;
+				return true;
+			}
+		}
+
+		if ( GetNeighbor( 1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
+
+		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.Red ); }
+		if ( neighbor != null && !ConnectedBottom && dot > 0.95f )
+		{
+			if ( (Position + (Transform.Rotation.Forward * scale) - neighbor.Position).Length < ConnectionDistance )
+			{
+				//if ( connectPhysically ) { ConnectToPiece( 0, 1 ); return true; }
+				//else if ( root != neighbor.root ) { return false; }
+
+				ConnectedBottom = true;
+				neighbor.ConnectedTop = true;
+				return true;
+			}
+		}
+
+
+		if ( GetNeighbor( 0, 1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
+
+		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.Blue ); }
+		if ( !ConnectedRight && neighbor != null && dot > 0.95f )
+		{
+			if ( (Position + (Transform.Rotation.Left * scale) - neighbor.Position).Length < ConnectionDistance )
+			{
+				DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.Red );
+				//if ( connectPhysically ) { ConnectToPiece( 1, 0 ); return true; }
+				//else if ( root != neighbor.root ) { return false; }
+
+				ConnectedRight = true;
+				neighbor.ConnectedLeft = true;
+
+				return true;
+			}	
+		}
+
+
+		if ( GetNeighbor( 0, -1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
+
+		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.Yellow ); }
+		if ( !ConnectedLeft && neighbor != null && dot > 0.95f )
+		{
+
+			if ( (Position + (Transform.Rotation.Right * scale) - neighbor.Position).Length < ConnectionDistance )
+			{
+				//if ( connectPhysically ) { ConnectToPiece( 0, -1 ); return true; }
+				//else if ( root != neighbor.root ) { return false; }
+
+				ConnectedLeft = true;
+				neighbor.ConnectedRight = true;
+
+				return true;
+			}
+		}
+
+		neighbor = null;
+		return false;
+
+	}
+
+	private bool GetNeighbor( int dirX, int dirY, out PuzzlePiece piece )
+	{
+		if ( dirX != 0 &&
+			X + dirX >= 0 &&
+			X + dirX < JigsawGame.Current.PieceCountX )
+		{
+			piece = JigsawGame.Current.GetPieceEntity(X + dirX, Y);
+
+			// Don't connect pieces that are already connected.
+			if ( piece.GetRoot() == GetRoot() ) { return false; }
+
+			return true;
+		}
+
+		if ( dirY != 0 &&
+			Y + dirY >= 0 &&
+			Y + dirY < JigsawGame.Current.PieceCountY )
+		{
+			piece = JigsawGame.Current.GetPieceEntity( X, Y + dirY );
+
+			// Don't connect pieces that are already connected.
+			if ( piece.GetRoot() == GetRoot() ) { return false; }
+
+			return true;
+		}
+
+		piece = null;
+		return false;
+	}
+
+	private void ConnectToPiece(PuzzlePiece piece)
+	{
+		PuzzlePiece newRoot = piece.GetRoot();
+
+		HeldBy.ActivePiece = null;
+		HeldBy = null;
+
+		PuzzlePiece root = GetRoot();
+		root.PhysicsEnabled = false;
+
+		root.Parent = newRoot;
+		root.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
+		root.LocalPosition = new Vector3( (root.X - newRoot.X) * JigsawGame.PieceScale, (root.Y - newRoot.Y) * JigsawGame.PieceScale );
+		root.rootPiece = newRoot;
+
 	}
 
 	public bool OnUse( Entity user )

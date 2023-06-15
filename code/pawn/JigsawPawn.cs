@@ -173,7 +173,7 @@ public partial class JigsawPawn : AnimatedEntity
 
 			if (tr.Hit)
 			{
-				SetActivePiece( tr.Entity as PuzzlePiece );
+				SetActivePiece( (tr.Entity as PuzzlePiece).GetRoot() );
 			}
 
 		}
@@ -185,7 +185,8 @@ public partial class JigsawPawn : AnimatedEntity
 		ActivePiece = piece;
 		ActivePiece.PhysicsEnabled = false;
 		ActivePiece.Parent = this;
-		Log.Error( "AP: " + ActivePiece.Name );
+		ActivePiece.HeldBy = this;
+
 		ActivePiece.Rotation = new Rotation(
 			ActivePiece.LocalRotation.x - (ActivePiece.Rotation.x % 15),
 			ActivePiece.LocalRotation.y - (ActivePiece.Rotation.y % 15),
@@ -204,7 +205,7 @@ public partial class JigsawPawn : AnimatedEntity
 	private void SimulateActivePiece()
 	{
 		if ( ActivePiece == null ) return;
-		ActivePiece.Position = EyePosition + (EyeRotation.Forward * 48) + (EyeRotation.Right * 32);
+		ActivePiece.Position = EyePosition + (EyeRotation.Forward * 64); // + (EyeRotation.Right * 64);
 
 		// Rotate active piece
 		if ( Input.Down( "attack2" ) && ActivePiece != null )
@@ -216,6 +217,9 @@ public partial class JigsawPawn : AnimatedEntity
 			if ( Input.Pressed( "Left" ) ) deltaRot.x -= 15;
 			//ActivePiece.Rotation = new Rotation( ActivePiece.Rotation.y + deltaRot.y, ActivePiece.Rotation.x + deltaRot.x, ActivePiece.Rotation.z, ActivePiece.Rotation.w );
 		}
+
+		ActivePiece.CheckForConnections();
+
 	}
 
 	bool IsThirdPerson { get; set; } = false;

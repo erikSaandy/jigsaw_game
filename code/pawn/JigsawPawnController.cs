@@ -19,6 +19,11 @@ public class JigsawPawnController : EntityComponent<JigsawPawn>
 	{
 		ControllerEvents.Clear();
 
+		if ( Input.Pressed( "Chat" ) )
+		{
+			JigsawGame.Current.GameState = new VotingGameState();
+		}
+
 		var movement = Entity.InputDirection.Normal;
 		var angles = Entity.ViewAngles.WithPitch( 0 );
 		var moveVector = Rotation.From( angles ) * movement * 320f;

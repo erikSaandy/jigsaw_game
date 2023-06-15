@@ -13,12 +13,18 @@ public partial class JigsawGame : GameManager
 	// All PuzzlePiece entities (NETWORKED)
 	[Net, Predicted] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
 
+	public PuzzlePiece GetPieceEntity(int x, int y)
+	{
+		int i = Math2d.ArrayIndex( x, y, PieceCountX, PieceCountY );
+		return PieceEntities[i];
+	}
+
 	// All piece models (CLIENT)
 	public Model[] PieceModels { get; set; } = null;		
 
 	// // //
 
-	[Net] public string PuzzleTextureURL { get; set; } = "https://i.ytimg.com/vi/WFybyXo7L7w/maxresdefault.jpg";
+	[Net] public string PuzzleTextureURL { get; set; } = "https://lumiere-a.akamaihd.net/v1/images/p_ratatouille_19736_0814231f.jpeg";
 	public Texture PuzzleTexture { get; private set; } = null;
 
 	public Material PuzzleMaterial { get; private set; } = null;
@@ -104,6 +110,7 @@ public partial class JigsawGame : GameManager
 
 			// Place piece //
 
+			// If map has spawners, prioritize.
 			if ( spawners.Count > 0 )
 			{
 				ent.Position = GetSpawnPosition( ref spawners );
@@ -111,7 +118,12 @@ public partial class JigsawGame : GameManager
 			}
 			else
 			{
-				// TODO: Use navmesh here
+				// Get random nav area
+				NavArea a = NavMesh.GetNavAreas().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
+
+				//ent.Position = (Vector3)NavMesh.GetClosestPoint( new Vector3(Rand.Next(-1024, 1024 ), Rand.Next( -1024, 1024 ), Rand.Next(64, 256)) );
+				ent.Position = a.FindRandomSpot();
+				ent.Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
 			}
 
 			PieceEntities[i] = ent; 
@@ -141,11 +153,8 @@ public partial class JigsawGame : GameManager
 
 		pos = spawners[id].Position + (dir * mag) + (Vector3.Up * Rand.Next( 2, 16 ));
 
-		// Remove single spawners from the list, except if it's the last spawner available (to avoid crashes :D)
-		if ( spawners.Count > 1 && !spawners[id].MultipleSpawns )
-		{
-			spawners.RemoveAt( id );
-		}
+		// Remove spawner from the list.
+		spawners.RemoveAt( id );
 
 		return pos;
 	}

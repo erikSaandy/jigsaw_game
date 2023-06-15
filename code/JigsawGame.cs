@@ -38,8 +38,6 @@ public partial class JigsawGame : GameManager
 	///// <summary>
 	///// GameState lets the game and joining clients know what to do.
 	///// </summary>
-	//[Net] private GameState State { get; set; } = GameState.Voting;
-
 	[Net] private BaseGameState gameState { get; set; }
 	public BaseGameState GameState { get { return gameState; } set { gameState = value; } }
 
@@ -50,7 +48,7 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsServer )
 		{
 			Rand = new Random();
-			GameState = new VotingGameState();
+			//GameState = new VotingGameState();
 		}
 
 
@@ -96,10 +94,6 @@ public partial class JigsawGame : GameManager
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
-
-		if(Game.IsClient)
-		{
-		}
 
 		GameState?.Simulate( cl );
 
@@ -157,11 +151,12 @@ public partial class VotingGameState : BaseGameState
 		if ( Game.IsServer )
 		{
 			Log.Info( "waiting..." );
+
 			// Temporary...
 			Wait( 1 );
 		}
 	}
-
+		
 	public async void Wait(int secs)
 	{
 		await Task.Delay( secs * 1000 );
