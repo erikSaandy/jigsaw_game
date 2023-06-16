@@ -29,6 +29,8 @@ public partial class PuzzlePiece : ModelEntity
 	private readonly int ConnectionDistance = 4;
 	public bool ConnectedLeft, ConnectedRight, ConnectedTop, ConnectedBottom = false;
 
+	public static bool Debug { get; set; } = false;
+
 	/// <summary>
 	/// Called when the entity is first created 
 	/// </summary>
@@ -96,7 +98,6 @@ public partial class PuzzlePiece : ModelEntity
 		{
 			if ( c != Vector2.Zero )
 			{
-				Log.Error( c );
 				PhysicsBody.AddBoxShape( c, Rotation.Identity, (new Vector3( JigsawGame.PipScale, JigsawGame.PipScale, JigsawGame.PieceThickness ) * JigsawGame.PieceScale / 2) );
 			}
 		}
@@ -105,7 +106,7 @@ public partial class PuzzlePiece : ModelEntity
 	[GameEvent.Tick]
 	void Tick()
 	{
-		if ( Game.IsClient )
+		if ( Game.IsClient && Debug )
 		{
 			DebugOverlay.Text( "[" + X + ", " + Y + "]", Position );
 
@@ -141,7 +142,7 @@ public partial class PuzzlePiece : ModelEntity
 		if ( GetNeighbor( -1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 
 
-		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.Green ); }
+		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.White ); }
 		if ( !ConnectedTop && neighbor != null && dot >= 0.95f )
 		{
 			if ( (Position + (Transform.Rotation.Backward * scale) - neighbor.Position).Length < ConnectionDistance )
@@ -157,7 +158,7 @@ public partial class PuzzlePiece : ModelEntity
 
 		if ( GetNeighbor( 1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 
-		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.Red ); }
+		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.White ); }
 		if ( neighbor != null && !ConnectedBottom && dot > 0.95f )
 		{
 			if ( (Position + (Transform.Rotation.Forward * scale) - neighbor.Position).Length < ConnectionDistance )
@@ -174,7 +175,7 @@ public partial class PuzzlePiece : ModelEntity
 
 		if ( GetNeighbor( 0, 1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 
-		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.Blue ); }
+		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.White ); }
 		if ( !ConnectedRight && neighbor != null && dot > 0.95f )
 		{
 			if ( (Position + (Transform.Rotation.Left * scale) - neighbor.Position).Length < ConnectionDistance )
@@ -193,7 +194,7 @@ public partial class PuzzlePiece : ModelEntity
 
 		if ( GetNeighbor( 0, -1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 
-		if ( neighbor != null ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.Yellow ); }
+		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.White ); }
 		if ( !ConnectedLeft && neighbor != null && dot > 0.95f )
 		{
 

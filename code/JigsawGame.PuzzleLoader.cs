@@ -24,7 +24,9 @@ public partial class JigsawGame : GameManager
 
 	// // //
 
-	[Net] public string PuzzleTextureURL { get; set; } = "https://lumiere-a.akamaihd.net/v1/images/p_ratatouille_19736_0814231f.jpeg";
+	[Net] public string PuzzleTextureURL { get; set; } = "https://images3.alphacoders.com/116/1163888.jpg";
+	//https://lumiere-a.akamaihd.net/v1/images/p_ratatouille_19736_0814231f.jpeg
+
 	public Texture PuzzleTexture { get; private set; } = null;
 
 	public Material PuzzleMaterial { get; private set; } = null;

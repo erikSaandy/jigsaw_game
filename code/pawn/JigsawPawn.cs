@@ -17,11 +17,6 @@ public partial class JigsawPawn : AnimatedEntity
 	[ClientInput]
 	public Angles ViewAngles { get; set; }
 
-	[Net, Predicted]
-	public PuzzlePiece ActivePiece { get; set; } = null;
-
-	private readonly int ActivePieceRotationStep = 30;
-
 	/// <summary>
 	/// Position a player should be looking from in world space.
 	/// </summary>
@@ -109,24 +104,19 @@ public partial class JigsawPawn : AnimatedEntity
 		Controller?.Simulate( cl );
 		Animator?.Simulate();
 		ActiveWeapon?.Simulate( cl );
+		SimulateActivePiece( cl );
 
 		EyeLocalPosition = Vector3.Up * (64f * Scale);
-
-		if ( Game.IsServer )
-		{
-			PuzzlePieceInput();
-		}
-
-		if ( Game.IsServer )
-		{
-
-			SimulateActivePiece();
-		}
 
 	}
 
 	public override void BuildInput()
 	{
+		if(Input.Pressed("Flashlight"))
+		{
+			PuzzlePiece.Debug = !PuzzlePiece.Debug;
+		}
+
 		// Rotate active piece
 		if ( !Input.Down( "attack2" ) )
 		{
@@ -136,6 +126,8 @@ public partial class JigsawPawn : AnimatedEntity
 		{
 			InputDirection = Vector2.Zero;
 		}
+
+		BuildActivePieceInput();
 
 		if ( Input.StopProcessing )
 			return;
@@ -152,87 +144,6 @@ public partial class JigsawPawn : AnimatedEntity
 		viewAngles.pitch = viewAngles.pitch.Clamp( -89f, 89f );
 		viewAngles.roll = 0f;
 		ViewAngles = viewAngles.Normal;
-
-	}
-
-	private void PuzzlePieceInput()
-	{
-		float rayMag = 256;
-
-		if ( Input.Pressed( "use" ))
-		{
-			if ( ActivePiece != null )
-			{
-				ClearActivePiece();
-				return;
-			}
-
-			TraceResult tr = Trace.Ray(EyePosition, EyePosition + (EyeRotation.Forward * rayMag) )
-				.UseHitboxes()
-				.WithTag("puzzlepiece")
-				.Ignore(this)
-				.Run();
-
-			DebugOverlay.Line( EyePosition, EyePosition + EyeRotation.Forward * rayMag, 1, true);
-
-			if (tr.Hit)
-			{
-				SetActivePiece( (tr.Entity as PuzzlePiece).GetRoot() );
-			}
-
-		}
-	}
-
-
-	private void SetActivePiece( PuzzlePiece piece )
-	{
-		ActivePiece = piece;
-		ActivePiece.PhysicsEnabled = false;
-		ActivePiece.Parent = this;
-		ActivePiece.HeldBy = this;
-
-		Angles a = ActivePiece.LocalRotation.Angles();
-		ActivePiece.LocalRotation = new Angles(
-			a.pitch - (a.pitch % ActivePieceRotationStep),
-			a.yaw - (a.yaw % ActivePieceRotationStep),
-			a.roll - (a.roll % ActivePieceRotationStep)
-			).ToRotation();
-
-	}
-
-	private void ClearActivePiece()
-	{
-		ActivePiece.PhysicsEnabled = true;
-		ActivePiece.Parent = null;
-		ActivePiece = null;
-	}
-	private void SimulateActivePiece()
-	{
-		if ( ActivePiece == null ) return;
-		ActivePiece.Position = EyePosition + (EyeRotation.Forward * 64); // + (EyeRotation.Right * 64);
-
-		// Rotate active piece
-		if ( Input.Down( "attack2" ) && ActivePiece != null )
-		{
-			Vector2 deltaRot = new Vector2();
-			if ( Input.Pressed( "Forward" ) ) deltaRot.y += ActivePieceRotationStep;
-			if ( Input.Pressed( "Backward" ) ) deltaRot.y -= ActivePieceRotationStep;
-			if ( Input.Pressed( "Right" ) ) deltaRot.x -= ActivePieceRotationStep;
-			if ( Input.Pressed( "Left" ) ) deltaRot.x += ActivePieceRotationStep;
-
-			Angles a = ActivePiece.Rotation.Angles();
-			//ActivePiece.LocalRotation = new Angles( a.pitch + deltaRot.x, a.yaw + deltaRot.y, a.roll ).ToRotation();
-
-			ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( Vector3.Up, (a.pitch + deltaRot.x).DegreeToRadian() );
-			//ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( ActivePiece.Rotation.Right, (a.yaw + deltaRot.y).DegreeToRadian() );
-
-			if ( deltaRot.Length != 0)
-				Log.Error( ActivePiece.LocalRotation.Angles() );
-
-			//ActivePiece.Rotation = new Rotation( ActivePiece.Rotation.y + deltaRot.y, ActivePiece.Rotation.x + deltaRot.x, ActivePiece.Rotation.z, ActivePiece.Rotation.w );
-		}
-
-		ActivePiece.CheckForConnections();
 
 	}
 
