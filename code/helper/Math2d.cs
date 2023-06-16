@@ -38,6 +38,7 @@ namespace Saandy {
 			if ( test < 0.0 ) angle = -angle;
 			return (float)angle * Rad2Deg;
 		}
+
 		public static Vector3 RotateVector3D( Vector3 vector, Vector3 axis, float angle )
 		{
 			Vector3 vxp = Vector3.Cross( axis, vector );

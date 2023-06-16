@@ -39,7 +39,7 @@ public partial class PuzzlePiece : ModelEntity
 
 	public PuzzlePiece() : base() {  }
 
-	public PuzzlePiece(int x, int y) : base()
+	public PuzzlePiece( int x, int y ) : base()
 	{
 		this.X = x;
 		this.Y = y;
@@ -47,9 +47,12 @@ public partial class PuzzlePiece : ModelEntity
 		Tags.Add( "puzzlepiece" );
 
 		// Generate
+		//SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
+
 
 		GetBoundingBox( out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
+		GeneratePipCollision();
 
 		PhysicsEnabled = true;
 		UsePhysicsCollision = true;
@@ -60,8 +63,10 @@ public partial class PuzzlePiece : ModelEntity
 	{
 		Model = JigsawGame.Current.PieceModels[Index];
 
+		//SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
 		GetBoundingBox( out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
+		GeneratePipCollision();
 	}
 
 	private void GetBoundingBox(out Vector3 mins, out Vector3 maxs)
@@ -83,6 +88,18 @@ public partial class PuzzlePiece : ModelEntity
 			(JigsawGame.PieceScale * JigsawGame.PieceThickness) / 2
 		);
 
+	}
+
+	private void GeneratePipCollision()
+	{
+		foreach ( Vector2 c in JigsawGame.Current.PieceMeshData[X, Y].pipCenters )
+		{
+			if ( c != Vector2.Zero )
+			{
+				Log.Error( c );
+				PhysicsBody.AddBoxShape( c, Rotation.Identity, (new Vector3( JigsawGame.PipScale, JigsawGame.PipScale, JigsawGame.PieceThickness ) * JigsawGame.PieceScale / 2) );
+			}
+		}
 	}
 
 	[GameEvent.Tick]

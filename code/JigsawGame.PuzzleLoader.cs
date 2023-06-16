@@ -74,7 +74,7 @@ public partial class JigsawGame : GameManager
 		if ( PuzzleTexture == null ) { OnPuzzleTextureLoadFailed(); return; }
 
 		// Get PieceCountX and PieceCountY
-		await Task.RunInThreadAsync( () => GetDimensions( PuzzleTexture, out int pc ) );
+		await Task.RunInThreadAsync( () => GeneratePuzzle() ); //GetDimensions( PuzzleTexture, out int pc ) );
 
 		Log.Info( "Puzzle dimensions: " + PieceCountX + ", " + PieceCountY );
 		Log.Info( "Puzzle piece count: " + PieceCountX * PieceCountY );

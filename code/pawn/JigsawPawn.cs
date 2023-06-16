@@ -1,4 +1,6 @@
-﻿using Sandbox;
+﻿using Saandy;
+using Sandbox;
+using System;
 using System.ComponentModel;
 using System.Numerics;
 
@@ -17,6 +19,8 @@ public partial class JigsawPawn : AnimatedEntity
 
 	[Net, Predicted]
 	public PuzzlePiece ActivePiece { get; set; } = null;
+
+	private readonly int ActivePieceRotationStep = 30;
 
 	/// <summary>
 	/// Position a player should be looking from in world space.
@@ -180,19 +184,19 @@ public partial class JigsawPawn : AnimatedEntity
 	}
 
 
-	private void SetActivePiece(PuzzlePiece piece)
+	private void SetActivePiece( PuzzlePiece piece )
 	{
 		ActivePiece = piece;
 		ActivePiece.PhysicsEnabled = false;
 		ActivePiece.Parent = this;
 		ActivePiece.HeldBy = this;
 
-		ActivePiece.Rotation = new Rotation(
-			ActivePiece.LocalRotation.x - (ActivePiece.Rotation.x % 15),
-			ActivePiece.LocalRotation.y - (ActivePiece.Rotation.y % 15),
-			ActivePiece.LocalRotation.z - (ActivePiece.Rotation.z % 15),
-			ActivePiece.LocalRotation.w - (ActivePiece.Rotation.w % 15)
-		);
+		Angles a = ActivePiece.LocalRotation.Angles();
+		ActivePiece.LocalRotation = new Angles(
+			a.pitch - (a.pitch % ActivePieceRotationStep),
+			a.yaw - (a.yaw % ActivePieceRotationStep),
+			a.roll - (a.roll % ActivePieceRotationStep)
+			).ToRotation();
 
 	}
 
@@ -211,10 +215,20 @@ public partial class JigsawPawn : AnimatedEntity
 		if ( Input.Down( "attack2" ) && ActivePiece != null )
 		{
 			Vector2 deltaRot = new Vector2();
-			if ( Input.Pressed( "Forward" ) ) deltaRot.y += 15;
-			if ( Input.Pressed( "Backward" ) ) deltaRot.y -= 15;
-			if ( Input.Pressed( "Right" ) ) deltaRot.y += 15;
-			if ( Input.Pressed( "Left" ) ) deltaRot.x -= 15;
+			if ( Input.Pressed( "Forward" ) ) deltaRot.y += ActivePieceRotationStep;
+			if ( Input.Pressed( "Backward" ) ) deltaRot.y -= ActivePieceRotationStep;
+			if ( Input.Pressed( "Right" ) ) deltaRot.x -= ActivePieceRotationStep;
+			if ( Input.Pressed( "Left" ) ) deltaRot.x += ActivePieceRotationStep;
+
+			Angles a = ActivePiece.Rotation.Angles();
+			//ActivePiece.LocalRotation = new Angles( a.pitch + deltaRot.x, a.yaw + deltaRot.y, a.roll ).ToRotation();
+
+			ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( Vector3.Up, (a.pitch + deltaRot.x).DegreeToRadian() );
+			//ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( ActivePiece.Rotation.Right, (a.yaw + deltaRot.y).DegreeToRadian() );
+
+			if ( deltaRot.Length != 0)
+				Log.Error( ActivePiece.LocalRotation.Angles() );
+
 			//ActivePiece.Rotation = new Rotation( ActivePiece.Rotation.y + deltaRot.y, ActivePiece.Rotation.x + deltaRot.x, ActivePiece.Rotation.z, ActivePiece.Rotation.w );
 		}
 

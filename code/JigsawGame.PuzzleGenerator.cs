@@ -15,8 +15,11 @@ public partial class JigsawGame : GameManager
 {
 
 	public static readonly int BacksideUVTiling = 8;
+
 	public static readonly float PieceThickness = 0.08f;
 	public static readonly int PieceScale = 24;
+	public static readonly float PipScale = 0.35f;
+
 	private static readonly int PipPointCount = 24;
 	private static readonly int BodyPointCount = 12;
 
@@ -244,12 +247,12 @@ public partial class JigsawGame : GameManager
 
         Math2d.Line side = piece.GetSide(sideIndex);
 
-		float pipSize = 0.35f;
 		// Cublic curve for pips.
         a = side.pointA + (side.Direction * start);
-        b = a + (up * pipSize) + (left * pipSize);
+        b = a + (up * PipScale) + (left * PipScale);
         d = side.pointA + (side.Direction * end);
-        c = d + (up * pipSize) + (right * pipSize);
+        c = d + (up * PipScale) + (right * PipScale);
+
         int pointCount = PipPointCount;
         for (int i = 0; i <= pointCount; i++) {
             float t = ((i) / (float)pointCount);
@@ -258,7 +261,9 @@ public partial class JigsawGame : GameManager
 			//Math2d.DrawPoint( p, Color.Red, 120, 1f );
 		}
 
-    }
+		piece.pipCenters[sideIndex] = ((a + b + c + d) / 4) - (new Vector2(piece.x, piece.y) * PieceScale) - (Vector2.One * (PieceScale/2));
+
+	}
 
     public static Vector2 GetWobblePositionAt(Vector2 position, bool wobbleX = true, bool wobbleY = true) {
         return GetWobblePositionAt(position.x, position.y, wobbleX, wobbleY);
@@ -291,6 +296,8 @@ public partial class PieceMeshData {
     private readonly Math2d.Line[] straightSides;
     private readonly bool[] isEdge;
 
+	public Vector2[] pipCenters;
+
     // What ID is the first point of the side?
     public int[] contourSideStartID;
 
@@ -304,6 +311,8 @@ public partial class PieceMeshData {
 		straightSides = new Math2d.Line[4] { new Math2d.Line(bl, tl), new Math2d.Line(tl, tr), new Math2d.Line(tr, br), new Math2d.Line(br, bl) };
 		isEdge = new bool[4] { edgeLeft, edgeTop, edgeRight, edgeBottom };
         center.Set((corners[0].x + corners[3].x) / 2, (corners[1].y + corners[0].y) / 2);
+
+		pipCenters = new Vector2[4];
 
         contourSideStartID = new int[4];
     }
