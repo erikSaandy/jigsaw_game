@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jigsaw;
 public partial class JigsawGame : GameManager
@@ -166,21 +167,20 @@ public partial class JigsawGame : GameManager
 	{
 		if ( Game.IsServer ) return;
 
-		PuzzleTexture = null;
 		// Load texture on client.
-		//PuzzleTexture = Texture.Load( FileSystem.Mounted, "textures/kittens.png" );
+		PuzzleTexture = null;
 		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
 
 		// Load materials.
 		LoadPuzzleMaterials();
+
 		// Generate meshes.
 		await Task.RunInThreadAsync( () => GeneratePuzzle() );
 
 		foreach ( PuzzlePiece piece in PieceEntities )
 		{
-			piece.GenerateClient();
+			await Task.RunInThreadAsync(() => piece.GenerateClient());
 		}
-
 
 		Log.Info( "Loaded puzzle meshes on client!" );
 	}
@@ -196,10 +196,10 @@ public partial class JigsawGame : GameManager
 	public void LoadPuzzleMaterials()
 	{
 		// Only load backside mat if it hasn't been loaded on client yet.
-		BacksideMaterial = null;
+		//BacksideMaterial = null;
 		BacksideMaterial = Material.Load( "materials/jigsaw/jigsaw_back/jigsaw_back.vmat" );
 		// Only load puzzle mat if it hasn't been loaded on client yet.
-		PuzzleMaterial = null;
+		//PuzzleMaterial = null;
 		PuzzleMaterial = Material.Load( "materials/jigsaw/default_image/jigsaw_default.vmat" );
 		// Set puzzle texture.
 		PuzzleMaterial.Set( "Color", PuzzleTexture );

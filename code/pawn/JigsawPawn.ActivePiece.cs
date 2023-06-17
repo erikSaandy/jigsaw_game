@@ -79,6 +79,8 @@ public partial class JigsawPawn : AnimatedEntity
 	{
 		float rayMag = 256;
 
+		if ( Game.IsClient ) return;
+
 		if ( Input.Pressed( "use" ))
 		{
 			if ( ActivePiece != null )
@@ -108,15 +110,17 @@ public partial class JigsawPawn : AnimatedEntity
 	private void SetActivePiece( PuzzlePiece piece )
 	{
 		ActivePiece = piece;
+		piece.Owner = this;
 
-		ActivePiece.PhysicsEnabled = false;
-		ActivePiece.Parent = this;
-		ActivePiece.HeldBy = this;
+		piece.PhysicsEnabled = false;
+		piece.EnableAllCollisions = false;
+		piece.Parent = this;
+		piece.HeldBy = this;
 
 		if ( Game.IsServer )
 		{
-			Angles a = ActivePiece.LocalRotation.Angles();
-			ActivePiece.LocalRotation = new Angles(
+			Angles a = piece.LocalRotation.Angles();
+			piece.LocalRotation = new Angles(
 				a.pitch - (a.pitch % ActivePieceRotationStep),
 				a.yaw - (a.yaw % ActivePieceRotationStep),
 				a.roll - (a.roll % ActivePieceRotationStep)
@@ -128,6 +132,8 @@ public partial class JigsawPawn : AnimatedEntity
 	private void ClearActivePiece()
 	{
 		ActivePiece.PhysicsEnabled = true;
+		ActivePiece.EnableAllCollisions = true;
+
 		ActivePiece.Parent = null;
 
 		//ActivePiece.Owner = null;

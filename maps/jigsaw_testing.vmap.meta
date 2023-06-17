@@ -17,7 +17,8 @@
       "PackageReferences": [],
       "EditorReferences": [
         "local.jigsaw#local",
-        "saandy.jigsaw#local"
+        "saandy.jigsaw#local",
+        "saandy.jigsaw"
       ],
       "Metadata": {}
     }
