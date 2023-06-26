@@ -10,6 +10,7 @@ public class JigsawPawnController : EntityComponent<JigsawPawn>
 	public int GroundAngle => 45;
 	public int JumpSpeed => 300;
 	public float Gravity => 800f;
+	public float RunningSpeed => 2.5f;
 
 	HashSet<string> ControllerEvents = new( StringComparer.OrdinalIgnoreCase );
 
@@ -37,7 +38,7 @@ public class JigsawPawnController : EntityComponent<JigsawPawn>
 				AddEvent( "grounded" );
 			}
 
-			Entity.Velocity = Accelerate( Entity.Velocity, moveVector.Normal, moveVector.Length, 200.0f * (Input.Down( "run" ) ? 2.5f : 1f), 7.5f );
+			Entity.Velocity = Accelerate( Entity.Velocity, moveVector.Normal, moveVector.Length, 200.0f * (Input.Down( "run" ) ? RunningSpeed : 1f), 7.5f );
 			Entity.Velocity = ApplyFriction( Entity.Velocity, 4.0f );
 		}
 		else

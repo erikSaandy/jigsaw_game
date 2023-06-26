@@ -24,7 +24,18 @@ public partial class PuzzlePiece : ModelEntity
 	public int Y { get; set; } = 0;
 
 	[Net, Predicted]
-	public JigsawPawn HeldBy { get; set; } = null;
+	private  JigsawPawn heldBy { get; set; } = null;
+
+	public JigsawPawn HeldBy {
+		get
+		{
+			return GetRoot().heldBy;
+		}
+		set
+		{
+			GetRoot().heldBy = value;
+		}
+	}
 
 	[Net]
 	public TimeSince TimeSincePickedUp { get; set; } = 0;
@@ -245,67 +256,68 @@ public partial class PuzzlePiece : ModelEntity
 	private void ConnectToPiece(PuzzlePiece other)
 	{
 
+		// connect all pieces.
+		PuzzlePiece activeRoot = GetRoot();
+		PuzzlePiece newRoot = other.GetRoot();
+
 		HeldBy.ActivePiece = null;
 		HeldBy = null;
 
-		// connect all pieces.
-		PuzzlePiece root = GetRoot();
-		PuzzlePiece newRoot = other.GetRoot();
+		// Check root to new root.
+		TryConnectSides( activeRoot, newRoot );
 
-		Vector2 dir = new Vector2( newRoot.X - X, newRoot.Y - Y );
-		int deg = deg = dir.ToInt();
-
-		// Connect root piece sides to new piece, if they share a side.
-		TryConnectSides( newRoot, dir, deg );
-
-		// Connect other pieces under root to new piece, if they share side.
-		foreach ( PuzzlePiece pn in newRoot.Children )
+		// For each piece in the held group...
+		foreach ( PuzzlePiece newRootPiece in newRoot.Children )
 		{
-			if ( pn == this ) { continue; }
+			// check to each piece in the new group.
+			foreach ( PuzzlePiece activeRootPiece in activeRoot.Children )
+			{
+				TryConnectSides( activeRootPiece, newRootPiece );
+			}
 
-			dir = new Vector2( pn.X - X, pn.Y - Y );
-			deg = dir.ToInt();	
-			TryConnectSides( pn, dir, deg );
-
+			// also check the root piece to every piece under new root.
+			TryConnectSides( activeRoot, newRootPiece );
 		}
 
 		// Set piece transform relative to root.
-		root.Parent = newRoot;
-		root.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
-		root.LocalPosition = new Vector3( (root.X - newRoot.X) * JigsawGame.PieceScale, (root.Y - newRoot.Y) * JigsawGame.PieceScale );
-		root.rootPiece = newRoot;
+		activeRoot.Parent = newRoot;
+		activeRoot.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
+		activeRoot.LocalPosition = new Vector3( (activeRoot.X - newRoot.X) * JigsawGame.PieceScale, (activeRoot.Y - newRoot.Y) * JigsawGame.PieceScale );
+		activeRoot.rootPiece = newRoot;
 
 		// Check if piece has a neighboring side with this piece, and connect them.
-		void TryConnectSides( PuzzlePiece pn, Vector2 dir, int deg )
+		void TryConnectSides( PuzzlePiece piece, PuzzlePiece other )
 		{
+			Vector2 dir = new Vector2( other.X - piece.X, other.Y - piece.Y );
+			int deg = dir.ToInt();
+
 			// piece is not a direct neighbor.
 			if ( dir.Length > 1 ) { return; }
 
-			Log.Error( "pos: " + new Vector2( X, Y ) + ", other pos: " + new Vector2( pn.X, pn.Y ) + ", dir: " + dir + ", deg: " + deg );
+			//Log.Error( "pos: " + new Vector2( X, Y ) + ", other pos: " + new Vector2( pn.X, pn.Y ) + ", dir: " + dir + ", deg: " + deg );
 
 			switch ( deg )
 			{
 				// up
 				case 0:
-					Log.Error( "Connect right" );
-					ConnectedRight = true;
-					pn.ConnectedLeft = true;
+					//Log.Error( "Connect right" );
+					piece.ConnectedRight = true;
+					other.ConnectedLeft = true;
 					break;
 				case 1:
-					Log.Error( "Connect Top" );
-					ConnectedTop = true;
-					pn.ConnectedBottom = true;
+					//Log.Error( "Connect Top" );
+					piece.ConnectedTop = true;
+					other.ConnectedBottom = true;
 					break;
 				case 2:
-					// YES
-					Log.Error( "Connect Left" );
-					ConnectedLeft = true;
-					pn.ConnectedRight = true;
+					//Log.Error( "Connect Left" );
+					piece.ConnectedLeft = true;
+					other.ConnectedRight = true;
 					break;
 				case 3:
-					Log.Error( "Connect Down" );
-					ConnectedBottom = true;
-					pn.ConnectedTop = true;
+					//Log.Error( "Connect Down" );
+					piece.ConnectedBottom = true;
+					other.ConnectedTop = true;
 					break;
 			}
 		}
