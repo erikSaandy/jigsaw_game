@@ -13,7 +13,6 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private readonly int ActivePieceRotationStep = 30;
 
-
 	public void SimulateActivePiece( IClient cl )
 	{
 
@@ -41,12 +40,19 @@ public partial class JigsawPawn : AnimatedEntity
 			//ActivePiece.Rotation = new Rotation( ActivePiece.Rotation.y + deltaRot.y, ActivePiece.Rotation.x + deltaRot.x, ActivePiece.Rotation.z, ActivePiece.Rotation.w );
 		}
 
-		ActivePiece.CheckForConnections();
+		if(ActivePiece.TimeSincePickedUp > 1 ) {
+			ActivePiece.CheckForConnections(); 
+		}
+
 
 	}
 
 	public void BuildActivePieceInput()
 	{
+
+		if ( Input.StopProcessing )
+			return;
+
 		// Rotate active piece
 		if ( !Input.Down( "attack2" ) )
 		{
@@ -56,9 +62,6 @@ public partial class JigsawPawn : AnimatedEntity
 		{
 			InputDirection = Vector2.Zero;
 		}
-
-		if ( Input.StopProcessing )
-			return;
 
 		var look = Input.AnalogLook;
 
@@ -77,6 +80,9 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private void PuzzlePieceInput()
 	{
+		if ( Input.StopProcessing )
+			return;
+
 		float rayMag = 256;
 
 		if ( Game.IsClient ) return;
@@ -93,13 +99,13 @@ public partial class JigsawPawn : AnimatedEntity
 				.UseHitboxes()
 				.WithTag("puzzlepiece")
 				.Ignore(this)
+				.EntitiesOnly()
 				.Run();
 
 			DebugOverlay.Line( EyePosition, EyePosition + EyeRotation.Forward * rayMag, 1, true);
 
 			if (tr.Hit)
 			{
-				tr.Entity.Owner = this;
 				SetActivePiece( (tr.Entity as PuzzlePiece).GetRoot() );
 			}
 
@@ -109,13 +115,15 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private void SetActivePiece( PuzzlePiece piece )
 	{
-		ActivePiece = piece;
 		piece.Owner = this;
+		ActivePiece = piece;
 
-		piece.PhysicsEnabled = false;
+		//piece.PhysicsEnabled = false;
+		piece.UsePhysicsCollision = false;
 		piece.EnableAllCollisions = false;
 		piece.Parent = this;
 		piece.HeldBy = this;
+		piece.TimeSincePickedUp = 0;
 
 		if ( Game.IsServer )
 		{
@@ -131,7 +139,7 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private void ClearActivePiece()
 	{
-		ActivePiece.PhysicsEnabled = true;
+		ActivePiece.UsePhysicsCollision = true;
 		ActivePiece.EnableAllCollisions = true;
 
 		ActivePiece.Parent = null;

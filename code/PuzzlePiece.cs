@@ -7,7 +7,7 @@ namespace Jigsaw;
 
 public partial class PuzzlePiece : ModelEntity
 {
-	[Net] private PuzzlePiece rootPiece { get; set; }
+	[Net] private PuzzlePiece rootPiece { get; set; } = null;
 	public PuzzlePiece RootPiece => GetRoot();
 	public PuzzlePiece GetRoot()
 	{
@@ -15,7 +15,7 @@ public partial class PuzzlePiece : ModelEntity
 		return rootPiece;
 	}
 
-	[Net]	
+	[Net]
 	public int Index { get; private set; } = 0;
 
 	[Net]
@@ -26,8 +26,15 @@ public partial class PuzzlePiece : ModelEntity
 	[Net, Predicted]
 	public JigsawPawn HeldBy { get; set; } = null;
 
+	[Net]
+	public TimeSince TimeSincePickedUp { get; set; } = 0;
+
 	private readonly int ConnectionDistance = 4;
-	public bool ConnectedLeft, ConnectedRight, ConnectedTop, ConnectedBottom = false;
+
+	[Net] public bool ConnectedLeft { get; set; } = false;
+	[Net] public bool ConnectedRight { get; set; } = false;
+	[Net] public bool ConnectedTop { get; set; } = false;
+	[Net] public bool ConnectedBottom { get; set; } = false;
 
 	public static bool Debug { get; set; } = false;
 
@@ -47,7 +54,8 @@ public partial class PuzzlePiece : ModelEntity
 		this.Y = y;
 		Index = Math2d.ArrayIndex( x, y, JigsawGame.Current.PieceCountX, JigsawGame.Current.PieceCountY );
 		Tags.Add( "puzzlepiece" );
-
+		Name = "PuzzlePiece" + " (" + X + ", " + Y + ")"; 
+		
 		// Generate
 		//SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
 
@@ -114,97 +122,87 @@ public partial class PuzzlePiece : ModelEntity
 			DebugOverlay.Line( center, center + (Transform.Rotation.Right * 32), Color.Red );
 			DebugOverlay.Line( center, center + (Transform.Rotation.Up * 32), Color.Green );
 
+			DebugOverlay.Sphere( Position, 4, Color.Red, 0.05f );
+			if ( ConnectedTop ) { DebugOverlay.Sphere( Position + Transform.Rotation.Forward * 4, 2, Color.Red, 0.05f ); }
+			if ( ConnectedLeft ) { DebugOverlay.Sphere( Position + Transform.Rotation.Left * 4, 2, Color.Green, 0.05f ); }
+			if ( ConnectedRight ) { DebugOverlay.Sphere( Position + Transform.Rotation.Right * 4, 2, Color.Blue, 0.05f ); }
+			if ( ConnectedBottom ) { DebugOverlay.Sphere( Position + Transform.Rotation.Backward * 4, 2, Color.Yellow, 0.05f ); }
+
 		}
 	}
 
 	public void CheckForConnections()
 	{
+		// Get the root of active piece.
 		if(GetRoot() != this ) { GetRoot().CheckForConnections(); return; }
 
 		// This is root
+
 		PuzzlePiece neighbor = null;
 
-		if( FindNeighbor(out neighbor ) ) { ConnectToPiece( neighbor ); return; }
+		// Find close neighbor with active piece root.
+		if( FindCloseNeighbor(out neighbor ) ) { ConnectToPiece( neighbor ); return; }
 
-		foreach(PuzzlePiece c in Children)
+		// Find close neighbor with pieces connected to active piece root.
+		foreach(PuzzlePiece c in Children )
 		{
-			if ( c.FindNeighbor( out neighbor ) ) { ConnectToPiece( neighbor ); return; }
+			if ( c.FindCloseNeighbor( out neighbor ) ) { c.ConnectToPiece( neighbor ); return; }
 		}
 	}
 
-	private bool FindNeighbor(out PuzzlePiece neighbor)
+	/// <summary>
+	/// Find a neighboring piece that is close enough to connect to.
+	/// </summary>
+	/// <param name="neighbor"></param>
+	/// <returns></returns>
+	private bool FindCloseNeighbor(out PuzzlePiece neighbor)
 	{
 		int scale = JigsawGame.PieceScale;
 		float dot = 0;
-
+			
 		//DebugOverlay.Line( Position, Position + (Transform.Rotation.Backward * scale), Color.Green );
 		if ( GetNeighbor( -1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-
-
 		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.White ); }
-		if ( !ConnectedTop && neighbor != null && dot >= 0.95f )
+		
+		if ( !ConnectedBottom && neighbor != null && dot >= 0.95f )
 		{
 			if ( (Position + (Transform.Rotation.Backward * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
-				//if ( connectPhysically ) { ConnectToPiece( -1, 0 ); return true; }
-				//else if ( root != neighbor.root ) { return false; }
-
-				ConnectedTop = true;
-				neighbor.ConnectedBottom = true;
 				return true;
 			}
 		}
 
 		if ( GetNeighbor( 1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-
 		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.White ); }
-		if ( neighbor != null && !ConnectedBottom && dot > 0.95f )
+		
+		if ( !ConnectedTop && neighbor != null && dot > 0.95f )
 		{
 			if ( (Position + (Transform.Rotation.Forward * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
-				//if ( connectPhysically ) { ConnectToPiece( 0, 1 ); return true; }
-				//else if ( root != neighbor.root ) { return false; }
-
-				ConnectedBottom = true;
-				neighbor.ConnectedTop = true;
 				return true;
 			}
 		}
 
 
 		if ( GetNeighbor( 0, 1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-
 		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.White ); }
-		if ( !ConnectedRight && neighbor != null && dot > 0.95f )
+
+		if ( !ConnectedLeft && neighbor != null && dot > 0.95f )
 		{
 			if ( (Position + (Transform.Rotation.Left * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
-				DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.Red );
-				//if ( connectPhysically ) { ConnectToPiece( 1, 0 ); return true; }
-				//else if ( root != neighbor.root ) { return false; }
-
-				ConnectedRight = true;
-				neighbor.ConnectedLeft = true;
-
 				return true;
 			}	
 		}
 
 
 		if ( GetNeighbor( 0, -1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-
 		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.White ); }
-		if ( !ConnectedLeft && neighbor != null && dot > 0.95f )
-		{
 
+		if ( !ConnectedRight && neighbor != null && dot > 0.95f )
+		{
 			if ( (Position + (Transform.Rotation.Right * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
-				//if ( connectPhysically ) { ConnectToPiece( 0, -1 ); return true; }
-				//else if ( root != neighbor.root ) { return false; }
-
-				ConnectedLeft = true;
-				neighbor.ConnectedRight = true;
-
 				return true;
 			}
 		}
@@ -244,21 +242,73 @@ public partial class PuzzlePiece : ModelEntity
 		return false;
 	}
 
-	private void ConnectToPiece(PuzzlePiece piece)
+	private void ConnectToPiece(PuzzlePiece other)
 	{
-		PuzzlePiece newRoot = piece.GetRoot();
 
 		HeldBy.ActivePiece = null;
 		HeldBy = null;
 
+		// connect all pieces.
 		PuzzlePiece root = GetRoot();
-		root.PhysicsEnabled = false;
+		PuzzlePiece newRoot = other.GetRoot();
 
+		Vector2 dir = new Vector2( newRoot.X - X, newRoot.Y - Y );
+		int deg = deg = dir.ToInt();
+
+		// Connect root piece sides to new piece, if they share a side.
+		TryConnectSides( newRoot, dir, deg );
+
+		// Connect other pieces under root to new piece, if they share side.
+		foreach ( PuzzlePiece pn in newRoot.Children )
+		{
+			if ( pn == this ) { continue; }
+
+			dir = new Vector2( pn.X - X, pn.Y - Y );
+			deg = dir.ToInt();	
+			TryConnectSides( pn, dir, deg );
+
+		}
+
+		// Set piece transform relative to root.
 		root.Parent = newRoot;
 		root.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
 		root.LocalPosition = new Vector3( (root.X - newRoot.X) * JigsawGame.PieceScale, (root.Y - newRoot.Y) * JigsawGame.PieceScale );
 		root.rootPiece = newRoot;
 
+		// Check if piece has a neighboring side with this piece, and connect them.
+		void TryConnectSides( PuzzlePiece pn, Vector2 dir, int deg )
+		{
+			// piece is not a direct neighbor.
+			if ( dir.Length > 1 ) { return; }
+
+			Log.Error( "pos: " + new Vector2( X, Y ) + ", other pos: " + new Vector2( pn.X, pn.Y ) + ", dir: " + dir + ", deg: " + deg );
+
+			switch ( deg )
+			{
+				// up
+				case 0:
+					Log.Error( "Connect right" );
+					ConnectedRight = true;
+					pn.ConnectedLeft = true;
+					break;
+				case 1:
+					Log.Error( "Connect Top" );
+					ConnectedTop = true;
+					pn.ConnectedBottom = true;
+					break;
+				case 2:
+					// YES
+					Log.Error( "Connect Left" );
+					ConnectedLeft = true;
+					pn.ConnectedRight = true;
+					break;
+				case 3:
+					Log.Error( "Connect Down" );
+					ConnectedBottom = true;
+					pn.ConnectedTop = true;
+					break;
+			}
+		}
 	}
 
 	public bool OnUse( Entity user )
