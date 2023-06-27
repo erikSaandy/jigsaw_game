@@ -16,7 +16,7 @@ public partial class JigsawGame : GameManager
 
 	public static readonly int BacksideUVTiling = 8;
 
-	public static readonly float PieceThickness = 0.11f;
+	public static readonly float PieceThickness = 0.12f;
 	public static readonly int PieceScale = 24;
 	public static readonly float PipScale = 0.35f;
 

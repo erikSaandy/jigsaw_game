@@ -8,7 +8,7 @@ namespace Jigsaw;
 
 public partial class JigsawPawn : AnimatedEntity
 {
-	[Net, Predicted]
+	[Net]
 	public PuzzlePiece ActivePiece { get; set; } = null;
 
 	private readonly int ActivePieceRotationStep = 30;
@@ -43,7 +43,6 @@ public partial class JigsawPawn : AnimatedEntity
 		if(ActivePiece.TimeSincePickedUp > 1 ) {
 			ActivePiece.CheckForConnections(); 
 		}
-
 
 	}
 

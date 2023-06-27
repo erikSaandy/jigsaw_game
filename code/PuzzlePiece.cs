@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using Saandy;
+using System.Collections.Generic;
 
 namespace Jigsaw;
 
@@ -116,7 +117,7 @@ public partial class PuzzlePiece : ModelEntity
 		{
 			if ( c != Vector2.Zero )
 			{
-				PhysicsBody.AddBoxShape( c, Rotation.Identity, (new Vector3( JigsawGame.PipScale, JigsawGame.PipScale, JigsawGame.PieceThickness ) * JigsawGame.PieceScale / 2) );
+				PhysicsBody?.AddBoxShape( c, Rotation.Identity, (new Vector3( JigsawGame.PipScale, JigsawGame.PipScale, JigsawGame.PieceThickness ) * JigsawGame.PieceScale / 2) );
 			}
 		}
 	}
@@ -152,13 +153,14 @@ public partial class PuzzlePiece : ModelEntity
 		PuzzlePiece neighbor = null;
 
 		// Find close neighbor with active piece root.
-		if( FindCloseNeighbor(out neighbor ) ) { ConnectToPiece( neighbor ); return; }
+		if( FindCloseNeighbor(out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return; }
 
 		// Find close neighbor with pieces connected to active piece root.
 		foreach(PuzzlePiece c in Children )
 		{
-			if ( c.FindCloseNeighbor( out neighbor ) ) { c.ConnectToPiece( neighbor ); return; }
+			if ( c.FindCloseNeighbor( out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return; }
 		}
+
 	}
 
 	/// <summary>
@@ -253,48 +255,57 @@ public partial class PuzzlePiece : ModelEntity
 		return false;
 	}
 
-	private void ConnectToPiece(PuzzlePiece other)
+	private void ConnectRoots(PuzzlePiece piece, PuzzlePiece other)
 	{
+		if ( Game.IsClient ) return;
 
 		// connect all pieces.
-		PuzzlePiece activeRoot = GetRoot();
-		PuzzlePiece newRoot = other.GetRoot();
+		PuzzlePiece thisRoot = piece.GetRoot();
+		PuzzlePiece otherRoot = other.GetRoot();
 
 		HeldBy.ActivePiece = null;
 		HeldBy = null;
 
-		// Check root to new root.
-		TryConnectSides( activeRoot, newRoot );
+		#region Piece Checks
 
-		// For each piece in the held group...
-		foreach ( PuzzlePiece newRootPiece in newRoot.Children )
+		IEnumerable<Entity> pNew = thisRoot.Children.Append( thisRoot );
+		IEnumerable<Entity> pOther = otherRoot.Children.Append( otherRoot );
+
+		// For each piece being connected
+		foreach ( PuzzlePiece n in pNew )
 		{
-			// check to each piece in the new group.
-			foreach ( PuzzlePiece activeRootPiece in activeRoot.Children )
+			// Check against all pieces in other root
+			foreach ( PuzzlePiece o in pOther )
 			{
-				TryConnectSides( activeRootPiece, newRootPiece );
+				TryConnectSides( n, o );
 			}
-
-			// also check the root piece to every piece under new root.
-			TryConnectSides( activeRoot, newRootPiece );
 		}
 
-		// Set piece transform relative to root.
-		activeRoot.Parent = newRoot;
-		activeRoot.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
-		activeRoot.LocalPosition = new Vector3( (activeRoot.X - newRoot.X) * JigsawGame.PieceScale, (activeRoot.Y - newRoot.Y) * JigsawGame.PieceScale );
-		activeRoot.rootPiece = newRoot;
+		#endregion
+
+		// COLLAPSE GROUP and PARENT
+		for ( int i = thisRoot.Children.Count() - 1; i >= -1; i-- )
+		{
+			PuzzlePiece c = i == -1 ? thisRoot : (PuzzlePiece)thisRoot.Children[i];
+			c.Parent = otherRoot;
+			c.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
+			c.LocalPosition = new Vector3( (c.X - otherRoot.X) * JigsawGame.PieceScale, (c.Y - otherRoot.Y) * JigsawGame.PieceScale );
+			c.rootPiece = otherRoot;
+		}
+
+		// // // // //
 
 		// Check if piece has a neighboring side with this piece, and connect them.
 		void TryConnectSides( PuzzlePiece piece, PuzzlePiece other )
 		{
-			Vector2 dir = new Vector2( other.X - piece.X, other.Y - piece.Y );
-			int deg = dir.ToInt();
+			if(piece == other ) { return; }
 
-			// piece is not a direct neighbor.
-			if ( dir.Length > 1 ) { return; }
+			Vector2 dir = new Vector2( other.X - piece.X, other.Y - piece.Y );		
+			if ( dir.Length > 1 ) { return; } // piece is not a direct neighbor.
+			int deg = dir.DirectionToQuadrant();
 
-			//Log.Error( "pos: " + new Vector2( X, Y ) + ", other pos: " + new Vector2( pn.X, pn.Y ) + ", dir: " + dir + ", deg: " + deg );
+			//Log.Error( "-------------" );
+			//Log.Error( "pos: " + new Vector2( piece.X, piece.Y ) + ", other pos: " + new Vector2( other.X, other.Y ) + ", dir: " + dir + ", deg: " + deg );
 
 			switch ( deg )
 			{

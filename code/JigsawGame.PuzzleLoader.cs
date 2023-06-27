@@ -175,7 +175,8 @@ public partial class JigsawGame : GameManager
 		LoadPuzzleMaterials();
 
 		// Generate meshes.
-		await Task.RunInThreadAsync( () => GeneratePuzzle() );
+		//await Task.RunInThreadAsync( () => GeneratePuzzle() );
+		GeneratePuzzle();
 
 		foreach ( PuzzlePiece piece in PieceEntities )
 		{

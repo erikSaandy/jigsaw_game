@@ -11,13 +11,16 @@ public static class Vector2Extension
 
 
 	/// <summary>
-	/// Takes a vector direction and returns an integer from 0 to 3.
+	/// Takes a vector direction and returns an integer representing a quadrant (0 ... 3)
 	/// </summary>
 	/// <param name="dir"></param>
 	/// <returns></returns>
-	public static int ToInt(this Vector2 dir )
+	public static int DirectionToQuadrant(this Vector2 dir )
 	{
+
 		dir = dir.Normal;
+		if(dir.Length == 0) { Log.Warning( "No direction!" ); return -1; }
+
 		return ((dir.Degrees / 90) + 0.25f).FloorToInt();
 	}
 
