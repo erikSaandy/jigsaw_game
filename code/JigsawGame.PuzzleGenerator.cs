@@ -40,6 +40,8 @@ public partial class JigsawGame : GameManager
 	/// </summary>
     public void GeneratePuzzle() {
 
+		IsGenerated = false;
+
 		if ( IsGenerated ) { return; }
 
 		float t = Time.Now;
@@ -279,7 +281,8 @@ public partial class JigsawGame : GameManager
     }
 
     public static float GetWobbleAt(float x, float y) {
-		return (Noise.Perlin( x * 0.1f, y * 0.1f, 0 )) * wobbleAmount * 64;
+		float scale = wobbleAmount * 64;
+		return (Noise.Perlin( x * 0.1f, y * 0.1f, 0 ) * scale) - (scale/2);
     }
 
 }

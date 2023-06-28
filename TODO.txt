@@ -1,0 +1,17 @@
+TODO
+
+- Pick up group from any piece, not just root.
+- Add physics to active piece, so that it doesn't move through walls.
+- Make sure pieces spawn close to already spawned pieces to prevent pieces spawning way in the distance (max radius thing)
+- Viewmodel?
+- TK animations
+
+- VC positional
+public override void OnVoicePlayed(IClient cl)
+{
+	cl.Voice.WantsStereo = true;
+	base.OnVoicePlayed(cl);
+}
+
+- Chat box
+- Nametags

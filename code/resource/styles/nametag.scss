@@ -1,0 +1,25 @@
+﻿NameTag
+{
+	justify-content: center;
+	align-items: center;
+	mix-blend-mode: lighten;
+
+	.title
+	{
+		font-family: DIN;
+		font-size: 40px;
+		white-space: nowrap;
+		color: #ffffff;
+		mix-blend-mode: color;
+		text-shadow: 0px 0px 2px #000;
+	}
+
+	.avatar
+	{
+		width: 60px;
+		height: 60px;
+		margin-right: 30px;
+		border-radius: 100px;
+		background-size: cover;	
+	}
+}

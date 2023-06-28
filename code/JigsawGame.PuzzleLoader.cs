@@ -76,15 +76,16 @@ public partial class JigsawGame : GameManager
 
 		if ( PuzzleTexture == null ) { OnPuzzleTextureLoadFailed(); return; }
 
-		// Get PieceCountX and PieceCountY
-		await Task.RunInThreadAsync( () => GeneratePuzzle() ); //GetDimensions( PuzzleTexture, out int pc ) );
+		//await Task.RunInThreadAsync( () => GeneratePuzzle() ); //GetDimensions( PuzzleTexture, out int pc ) );
+		GeneratePuzzle();
 
 		Log.Info( "Puzzle dimensions: " + PieceCountX + ", " + PieceCountY );
 		Log.Info( "Puzzle piece count: " + PieceCountX * PieceCountY );
 
 		// Spawning entity pieces //
 
-		SpawnPuzzleEntities();
+		//SpawnPuzzleEntities();
+		SpawnPuzzlePiecesInGrid();
 
 		GameState = new PuzzlingGameState();
 
@@ -134,6 +135,30 @@ public partial class JigsawGame : GameManager
 
 	}
 
+	public void SpawnPuzzlePiecesInGrid(float spacing = 8f)
+	{
+		// Only do this on server.
+		if ( Game.IsClient ) return;
+
+		DeletePieceEntities();
+		int count = PieceCountX * PieceCountY;
+		PieceEntities = new PuzzlePiece[count];
+
+		for ( int i = 0; i < count; i++ )
+		{
+			// Get x and y of piece.
+			Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y );
+			// Generate piece.
+			PuzzlePiece ent = new PuzzlePiece( x, y );
+
+			// Place piece //
+			Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 );
+			ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Up * 4);
+
+			PieceEntities[i] = ent;
+		}
+	}
+
 	/// <summary>
 	/// Spawn puzzle pieces using map defined spawn points.
 	/// </summary>
@@ -180,7 +205,8 @@ public partial class JigsawGame : GameManager
 
 		foreach ( PuzzlePiece piece in PieceEntities )
 		{
-			await Task.RunInThreadAsync(() => piece.GenerateClient());
+			//await Task.RunInThreadAsync(() => piece.GenerateClient());
+			piece.GenerateClient();
 		}
 
 		Log.Info( "Loaded puzzle meshes on client!" );

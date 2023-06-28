@@ -98,10 +98,8 @@ public partial class JigsawPawn : AnimatedEntity
 				.UseHitboxes()
 				.WithTag("puzzlepiece")
 				.Ignore(this)
-				.EntitiesOnly()
+				.DynamicOnly()
 				.Run();
-
-			DebugOverlay.Line( EyePosition, EyePosition + EyeRotation.Forward * rayMag, 1, true);
 
 			if (tr.Hit)
 			{

@@ -20,7 +20,7 @@ public class JigsawPawnController : EntityComponent<JigsawPawn>
 	{
 		ControllerEvents.Clear();
 
-		if ( Input.Pressed( "Chat" ) )
+		if ( Input.Pressed( "Reload" ) )
 		{
 			JigsawGame.Current.GameState = new VotingGameState();
 		}

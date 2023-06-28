@@ -49,6 +49,9 @@ public partial class JigsawGame : GameManager
 		{
 			Rand = new Random();
 			//GameState = new VotingGameState();
+
+			// Create the HUD
+			//_ = new JigsawHud();
 		}
 
 
