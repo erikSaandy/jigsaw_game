@@ -11,18 +11,19 @@ public class HudRootPanel : RootPanel
 		Current = this;
 
 		StyleSheet.Load( "/resource/styles/hud.scss" );
-		SetTemplate( "/resource/templates/hud.html" );
+		//SetTemplate( "/resource/templates/hud.html" );
 
 		//AddChild<DamageIndicator>();
 		//AddChild<HitIndicator>();
 
 		//AddChild<InventoryBar>();
 		//AddChild<PickupFeed>();
-
+		AddChild<Crosshair>();
 		AddChild<ChatBox>();
 		//AddChild<KillFeed>();
 		//Scoreboard = AddChild<Scoreboard>();
 		AddChild<VoiceList>();
+		AddChild<VoiceSpeaker>();
 	}
 
 	public override void Tick()

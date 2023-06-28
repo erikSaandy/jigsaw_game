@@ -2,10 +2,6 @@
 
 public partial class JigsawHud : HudEntity<HudRootPanel>
 {
-	public JigsawHud()
-	{
-		Log.Error( "hud" );
-	}
 	//[ClientRpc]
 	//public void OnPlayerDied( DeathmatchPlayer player )
 	//{
