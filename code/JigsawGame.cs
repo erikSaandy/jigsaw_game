@@ -20,26 +20,21 @@ namespace Jigsaw;
 /// </summary>
 public partial class JigsawGame : GameManager
 {
-	/// <summary>
-	/// Server random.
-	/// </summary>
-	public static Random Rand { get; set; }
 
 	public static new JigsawGame Current { get; protected set; }
-
-	//public enum GameState
-	//{
-	//	Voting = 0, // Voting on puzzle texture.
-	//	Loading, // Texture is decided, loading entities and client meshes.
-	//	Puzzling, // In a loaded game. New clients needs to load piece meshes and texture.
-	//	Ending // Puzzle is done! Quick pause before voting starts again.
-	//}
 
 	///// <summary>
 	///// GameState lets the game and joining clients know what to do.
 	///// </summary>
 	[Net] private BaseGameState gameState { get; set; }
 	public BaseGameState GameState { get { return gameState; } set { gameState = value; } }
+
+	[Net] JigsawHud Hud { get; set; }
+
+	/// <summary>
+	/// Server random.
+	/// </summary>
+	public static Random Rand { get; set; }
 
 	public JigsawGame()
 	{
@@ -48,10 +43,9 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsServer )
 		{
 			Rand = new Random();
-			//GameState = new VotingGameState();
+			Hud = new JigsawHud();
 
-			// Create the HUD
-			//_ = new JigsawHud();
+			//GameState = new VotingGameState();
 		}
 
 
