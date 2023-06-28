@@ -29,8 +29,6 @@ public partial class JigsawGame : GameManager
 	[Net] private BaseGameState gameState { get; set; }
 	public BaseGameState GameState { get { return gameState; } set { gameState = value; } }
 
-	[Net] JigsawHud Hud { get; set; }
-
 	/// <summary>
 	/// Server random.
 	/// </summary>
@@ -43,7 +41,6 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsServer )
 		{
 			Rand = new Random();
-			Hud = new JigsawHud();
 
 			//GameState = new VotingGameState();
 		}
@@ -54,6 +51,7 @@ public partial class JigsawGame : GameManager
 			// Create the HUD
 			//Hud = new ExplorerHud();
 			//Hud.HudInit();
+			new RootHud();
 		}
 
 	}

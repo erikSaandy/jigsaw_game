@@ -1,0 +1,67 @@
+@using System;
+@using Sandbox;
+@using Sandbox.UI;
+
+@namespace Jigsaw
+@inherits RootPanel
+
+<style>
+	RootHud {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.debugText {
+		font-size: 25px;
+		color: white;
+		font-family: Poppins;
+		font-weight: 600;
+		text-align: left;
+
+		width:100%;
+		height: 100%;
+		margin-left:50px;
+		margin-top:25px;
+
+
+		text-stroke: 5px black;
+	}
+
+</style>
+
+<root>
+
+	<panel class="debugText">
+[R] Reload puzzle pieces
+[F] Toggle debug display
+	</panel>
+
+</root>
+
+@code {
+	public static RootHud Current;
+
+	public RootHud()
+	{
+		Current = this;
+
+		//AddChild<DamageIndicator>();
+		//AddChild<HitIndicator>();
+
+		//AddChild<InventoryBar>();
+		//AddChild<PickupFeed>();
+		AddChild<Jigsaw.Crosshair>();
+		AddChild<ChatBox>();
+		//AddChild<KillFeed>();
+		//Scoreboard = AddChild<Scoreboard>();
+		AddChild<VoiceList>();
+		AddChild<VoiceSpeaker>();
+	}
+
+	protected override int BuildHash()
+	{
+		return Time.Now.GetHashCode();
+	}
+}
