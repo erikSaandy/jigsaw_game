@@ -24,8 +24,9 @@ public partial class JigsawGame : GameManager
 
 	// // //
 
-	[Net] public string PuzzleTextureURL { get; set; } = "https://images3.alphacoders.com/116/1163888.jpg";
+	[Net] public string PuzzleTextureURL { get; set; } = "https://lumiere-a.akamaihd.net/v1/images/p_ratatouille_19736_0814231f.jpeg";
 	//https://lumiere-a.akamaihd.net/v1/images/p_ratatouille_19736_0814231f.jpeg
+	//https://images3.alphacoders.com/116/1163888.jpg
 
 	public Texture PuzzleTexture { get; private set; } = null;
 
@@ -151,7 +152,8 @@ public partial class JigsawGame : GameManager
 			PuzzlePiece ent = new PuzzlePiece( x, y );
 
 			// Place piece //
-			Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 );
+			Vector3 spawnArea = new Vector2( PieceCountX * (PieceScale + spacing), PieceCountY * (PieceScale + spacing) );
+			Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 ) - (spawnArea / 2);
 			ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Up * 4);
 
 			PieceEntities[i] = ent;

@@ -40,7 +40,7 @@ public partial class JigsawPawn : AnimatedEntity
 			//ActivePiece.Rotation = new Rotation( ActivePiece.Rotation.y + deltaRot.y, ActivePiece.Rotation.x + deltaRot.x, ActivePiece.Rotation.z, ActivePiece.Rotation.w );
 		}
 
-		if(ActivePiece.TimeSincePickedUp > 1 ) {
+		if(ActivePiece.TimeSincePickedUp > 0.5f ) {
 			ActivePiece.CheckForConnections(); 
 		}
 

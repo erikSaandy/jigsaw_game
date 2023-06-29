@@ -10,14 +10,14 @@ using Saandy;
 
 namespace Jigsaw;
 
-[EditorSprite("icons/icon_jigsaw_controller.png")]
+//[EditorSprite( "icons/jigsaw_controller/jigsaw_controller" )]
 [Library( "jigsaw_controller" ), HammerEntity]
 [Title( "Jigsaw Controller" ), Category( "Jigsaw" ), Icon( "place" )]
 public class JigsawController : Entity
 {
 
-	[Property( Title = "Puzzle Piece Scale" )]
-	[Range(0, 128, 1)]
+	
+	[Property( Name = "piece_scale", Title = "Puzzle Piece Scale" )]
 	public int PieceScale { get; set; } = 32;
 
 	public override void Spawn()
