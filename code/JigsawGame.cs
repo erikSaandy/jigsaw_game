@@ -1,4 +1,5 @@
-﻿using Sandbox;
+﻿using Microsoft.VisualBasic;
+using Sandbox;
 using Sandbox.UI.Construct;
 using System;
 using System.IO;
@@ -29,10 +30,13 @@ public partial class JigsawGame : GameManager
 	[Net] private BaseGameState gameState { get; set; }
 	public BaseGameState GameState { get { return gameState; } set { gameState = value; } }
 
+
 	/// <summary>
 	/// Server random.
 	/// </summary>
 	public static Random Rand { get; set; }
+
+	[Net] public JigsawPawn Leader { get; set; }
 
 	public JigsawGame()
 	{
@@ -40,9 +44,10 @@ public partial class JigsawGame : GameManager
 
 		if ( Game.IsServer )
 		{
+			Leader = null;
 			Rand = new Random();
 
-			//GameState = new VotingGameState();
+			GameState = new VotingGameState();
 		}
 
 
@@ -81,6 +86,9 @@ public partial class JigsawGame : GameManager
 			tx.Position = tx.Position + Vector3.Up * 50.0f; // raise it up
 			pawn.Transform = tx;
 		}
+
+		// Make sure someone is leader.
+		if ( Leader == null ) { Leader = pawn; }
 
 		GameState?.ClientJoined( client );
 
@@ -145,18 +153,18 @@ public partial class VotingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
-			Log.Info( "waiting..." );
+			//Log.Info( "waiting..." );
 
-			// Temporary...
-			Wait( 1 );
+			//// Temporary...
+			//Wait( 1 );
 		}
 	}
 		
-	public async void Wait(int secs)
-	{
-		await Task.Delay( secs * 1000 );
-		JigsawGame.Current.GameState = new LoadingGameState();
-	}
+	//public async void Wait(int secs)
+	//{
+	//	await Task.Delay( secs * 1000 );
+	//	JigsawGame.Current.GameState = new LoadingGameState();
+	//}
 
 }
 
@@ -180,6 +188,8 @@ public partial class LoadingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
+			// TODO: TIMER! But only if there are more than one player in the game.
+			
 			Log.Info( "Loading client meshes..." );
 			JigsawGame.Current.PuzzleLoaderInit();
 		}

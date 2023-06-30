@@ -72,6 +72,7 @@ public partial class JigsawGame : GameManager
 
 		// Load texture on server.
 		//PuzzleTexture = await Texture.LoadAsync( FileSystem.Mounted, "textures/kittens.png" );   
+		Log.Error( PuzzleTextureURL );
 		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
 
 		if ( PuzzleTexture == null ) { OnPuzzleTextureLoadFailed(); return; }
@@ -84,8 +85,8 @@ public partial class JigsawGame : GameManager
 
 		// Spawning entity pieces //
 
-		//SpawnPuzzleEntities();
-		SpawnPuzzlePiecesInGrid();
+		SpawnPuzzleEntities();
+		//SpawnPuzzlePiecesInGrid();
 
 		GameState = new PuzzlingGameState();
 
@@ -206,8 +207,8 @@ public partial class JigsawGame : GameManager
 
 		foreach ( PuzzlePiece piece in PieceEntities )
 		{
-			//await Task.RunInThreadAsync(() => piece.GenerateClient());
 			piece.GenerateClient();
+			//piece.GenerateClient();
 		}
 
 		Log.Info( "Loaded puzzle meshes on client!" );
@@ -225,10 +226,10 @@ public partial class JigsawGame : GameManager
 	{
 		// Only load backside mat if it hasn't been loaded on client yet.
 		//BacksideMaterial = null;
-		BacksideMaterial = Material.Load( "materials/jigsaw/jigsaw_back/jigsaw_back.vmat" );
+		BacksideMaterial = Material.Load( "materials/jigsaw_backside/jigsaw_backside.vmat" );
 		// Only load puzzle mat if it hasn't been loaded on client yet.
 		//PuzzleMaterial = null;
-		PuzzleMaterial = Material.Load( "materials/jigsaw/default_image/jigsaw_default.vmat" );
+		PuzzleMaterial = Material.Load( "materials/jigsaw_image/jigsaw_image.vmat" );
 		// Set puzzle texture.
 		PuzzleMaterial.Set( "Color", PuzzleTexture );
 	}

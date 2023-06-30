@@ -22,7 +22,7 @@ public class JigsawPawnController : EntityComponent<JigsawPawn>
 
 		if ( Input.Pressed( "Reload" ) )
 		{
-			JigsawGame.Current.GameState = new VotingGameState();
+			JigsawGame.Current.GameState = new LoadingGameState();
 		}
 
 		var movement = Entity.InputDirection.Normal;

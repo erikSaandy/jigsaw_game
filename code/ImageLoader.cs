@@ -11,15 +11,45 @@ namespace Jigsaw;
 public static class ImageLoader
 {
 
-	public static async Task<Texture> LoadWebImage(string URL )
+	public static bool IsURL(string uri)
 	{
-		Texture image = null;
+		//Log.Error( "URL?" );
+		//Uri uriResult;
+		//bool v = Uri.TryCreate( uri, UriKind.Absolute, out uriResult );
+		//Log.Error( uriResult );
+		bool v = Uri.IsWellFormedUriString( uri, UriKind.Absolute );
+		if ( v )
+		{
+			Log.Error( "is url" );
+		}
 
-		image = await Texture.LoadAsync( null, URL );
+		return v;
+	}
+
+	//public static async Task<Texture> LoadWebImage(string URL )
+	//{
+	//	Texture image = null;
+
+	//	image = await Texture.LoadAsync( null, URL );
+
+	//	return image;
+	//}
+
+	public static async Task<Texture> LoadWebImage( string URL )
+	{
+		Texture image = await Texture.LoadAsync( null, URL );
+
+		// CHECK IF IMAGE IS GOOD.
+		// CHECK ASPECT RATIO
+		// CHECK SIZE
 
 		return image;
 	}
 
+	//private static void SaySomething(string message)
+	//{
+	//	ChatBox.SaySomething( message );
+	//}
 
 
 }
