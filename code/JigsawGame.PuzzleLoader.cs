@@ -33,33 +33,12 @@ public partial class JigsawGame : GameManager
 	public Material PuzzleMaterial { get; private set; } = null;
 	public Material BacksideMaterial { get; private set; } = null;
 
-	//[ConCmd.Client( "new_image" )]
-	//public void NewImageFromDisk( string parameter )
-	//{
-	//	Log.Error( "yo" );
-	//	Texture t = Texture.Load( FileSystem.Mounted, TextureAdress );
-	//	string pathP = "textures/" + parameter;
-
-	//	//Couldn't find image.
-	//	if ( t == null )
-	//	{
-	//		Log.Error( pathP + " does not excist." );
-	//		return;
-	//	}
-
-	//	TextureAdress = pathP;
-	//	GetDimensions( t, out int pc );
-
-	//	//TODO destroy last puzzle.
-	//}
-
 	public void PuzzleLoaderInit()
 	{
 		if ( Game.IsServer )
 		{
 			LoadEntities();
 		}
-
 	}
 
 	/// <summary>
@@ -68,16 +47,13 @@ public partial class JigsawGame : GameManager
 	public async void LoadEntities()
 	{
 
-		if ( Game.IsClient ) return;
-
 		// Load texture on server.
-		//PuzzleTexture = await Texture.LoadAsync( FileSystem.Mounted, "textures/kittens.png" );   
-		Log.Error( PuzzleTextureURL );
-		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
+		Log.Warning( "Loading image: " + PuzzleTextureURL );
+
+		PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
 
 		if ( PuzzleTexture == null ) { OnPuzzleTextureLoadFailed(); return; }
 
-		//await Task.RunInThreadAsync( () => GeneratePuzzle() ); //GetDimensions( PuzzleTexture, out int pc ) );
 		GeneratePuzzle();
 
 		Log.Info( "Puzzle dimensions: " + PieceCountX + ", " + PieceCountY );
@@ -85,8 +61,8 @@ public partial class JigsawGame : GameManager
 
 		// Spawning entity pieces //
 
-		SpawnPuzzleEntities();
-		//SpawnPuzzlePiecesInGrid();
+		//SpawnPuzzleEntities();
+		SpawnPuzzlePiecesInGrid();
 
 		GameState = new PuzzlingGameState();
 
@@ -101,6 +77,7 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsClient ) return;
 
 		DeletePieceEntities();
+
 		int count = PieceCountX * PieceCountY;
 		PieceEntities = new PuzzlePiece[count];
 
@@ -109,7 +86,7 @@ public partial class JigsawGame : GameManager
 		for ( int i = 0; i < count; i++ )
 		{
 			// Get x and y of piece.
-			Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y ); 
+			Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y );
 			// Generate piece.
 			PuzzlePiece ent = new PuzzlePiece( x, y );
 
@@ -190,25 +167,30 @@ public partial class JigsawGame : GameManager
 	}
 
 	// Load materials, meshes and assign to piece entities.
-	public async void LoadClientPieces()
+	public void LoadClientPieces()
 	{
 		if ( Game.IsServer ) return;
 
 		// Load texture on client.
 		PuzzleTexture = null;
-		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
+		PuzzleTexture = Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) ).Result;
 
 		// Load materials.
 		LoadPuzzleMaterials();
 
 		// Generate meshes.
-		//await Task.RunInThreadAsync( () => GeneratePuzzle() );
 		GeneratePuzzle();
 
-		foreach ( PuzzlePiece piece in PieceEntities )
+		for(int i = 0; i < PieceEntities.Count; i++ )
 		{
-			piece.GenerateClient();
-			//piece.GenerateClient();
+			try
+			{
+				PieceEntities[i].GenerateClient();
+			}
+			catch ( Exception e )
+			{
+				Log.Error( e );
+			}
 		}
 
 		Log.Info( "Loaded puzzle meshes on client!" );

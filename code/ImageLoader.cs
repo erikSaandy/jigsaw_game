@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 
 namespace Jigsaw;
@@ -26,15 +27,6 @@ public static class ImageLoader
 		return v;
 	}
 
-	//public static async Task<Texture> LoadWebImage(string URL )
-	//{
-	//	Texture image = null;
-
-	//	image = await Texture.LoadAsync( null, URL );
-
-	//	return image;
-	//}
-
 	public static async Task<Texture> LoadWebImage( string URL )
 	{
 		Texture image = await Texture.LoadAsync( null, URL );
@@ -45,11 +37,5 @@ public static class ImageLoader
 
 		return image;
 	}
-
-	//private static void SaySomething(string message)
-	//{
-	//	ChatBox.SaySomething( message );
-	//}
-
 
 }
