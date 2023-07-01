@@ -11,7 +11,7 @@ public partial class JigsawGame : GameManager
 {
 
 	// All PuzzlePiece entities (NETWORKED)
-	[Net, Predicted] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
+	[Net] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
 
 	public PuzzlePiece GetPieceEntity(int x, int y)
 	{
@@ -78,37 +78,39 @@ public partial class JigsawGame : GameManager
 
 		DeletePieceEntities();
 
-		int count = PieceCountX * PieceCountY;
-		PieceEntities = new PuzzlePiece[count];
+		int pieceCount = PieceCountX * PieceCountY;
+		PieceEntities = new PuzzlePiece[pieceCount];
 
 		List<PieceSpawner> spawners = Entity.All.OfType<PieceSpawner>().ToList();
+		IEnumerable<NavArea> areas = NavMesh.GetNavAreas();
 
-		for ( int i = 0; i < count; i++ )
+		// Place piece //
+		for ( int i = 0; i < pieceCount; i++ )
 		{
-			// Get x and y of piece.
 			Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y );
-			// Generate piece.
 			PuzzlePiece ent = new PuzzlePiece( x, y );
-
-			// Place piece //
 
 			// If map has spawners, prioritize.
 			if ( spawners.Count > 0 )
 			{
-				ent.Position = GetSpawnPosition( ref spawners );
+				PieceEntities[i].Position = GetSpawnPosition( ref spawners );
+				PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+			}
+			else if ( areas?.Count() > 0 )
+			{
+				// Get random nav area
+				NavArea a = NavMesh.GetNavAreas().OrderBy( ( x ) => Guid.NewGuid() ).FirstOrDefault();
+
+				//ent.Position = (Vector3)NavMesh.GetClosestPoint( new Vector3(Rand.Next(-1024, 1024 ), Rand.Next( -1024, 1024 ), Rand.Next(64, 256)) );
+				ent.Position = a.FindRandomSpot() + (Vector3.Up*64);
 				ent.Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
 			}
 			else
 			{
-				// Get random nav area
-				NavArea a = NavMesh.GetNavAreas().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
-
-				//ent.Position = (Vector3)NavMesh.GetClosestPoint( new Vector3(Rand.Next(-1024, 1024 ), Rand.Next( -1024, 1024 ), Rand.Next(64, 256)) );
-				ent.Position = a.FindRandomSpot();
-				ent.Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+				Log.Error( "wow, the map doesn't have a nav mesh. bummer." );
 			}
 
-			PieceEntities[i] = ent; 
+			PieceEntities[i] = ent;
 		}
 
 	}
@@ -189,6 +191,7 @@ public partial class JigsawGame : GameManager
 			}
 			catch ( Exception e )
 			{
+				//Log.Error( "[" + i + "]" );
 				Log.Error( e );
 			}
 		}

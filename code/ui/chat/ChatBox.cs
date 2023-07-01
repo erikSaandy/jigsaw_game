@@ -104,30 +104,36 @@ namespace Jigsaw
 		[ConCmd.Server]	
 		public static async void SaySomething( string message )
 		{
-
+			string avatar = "";
 			if(MessageIsPuzzleURL( message ) )
 			{
 				Texture t = await JigsawGame.Current.Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( message ) );
 
-				if(t != null)
+				// Did the URL load a valid image?
+				if (t?.Size != Vector2.One)
 				{
 					JigsawGame.Current.PuzzleTextureURL = message;
 					JigsawGame.Current.GameState = new LoadingGameState();
-					return;
+
+					message = "Found a valid image! \rLoading...";
+					avatar = "icons/server.png";
 				}
 				else
 				{
-					message = "URL is not valid! Please try another URL.";
+					message = "URL is not valid! \rPlease try another URL";
+					avatar = "icons/server.png";
 				}
 			}
 
-			// todo - reject more stuff
-			if ( message.Contains( '\n' ) || message.Contains( '\r' ) )
-				return;
+			//// todo - reject more stuff
+			//if ( message.Contains( '\n' ) || message.Contains( '\r' ) )
+			//	return;
 
 			Log.Info( $"{ConsoleSystem.Caller}: {message}" );
-      
-			AddChatEntry( To.Everyone, ConsoleSystem.Caller?.Name ?? "Server", message, $"avatar:{ConsoleSystem.Caller?.SteamId}" );
+
+			if ( avatar == "" ) avatar = $"avatar:{ConsoleSystem.Caller?.SteamId}";
+
+			AddChatEntry( To.Everyone, ConsoleSystem.Caller?.Name ?? "[Server]", message, avatar );
 		}
 
 		private static bool MessageIsPuzzleURL(string message)

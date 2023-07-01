@@ -18,13 +18,7 @@ public static class ImageLoader
 		//Uri uriResult;
 		//bool v = Uri.TryCreate( uri, UriKind.Absolute, out uriResult );
 		//Log.Error( uriResult );
-		bool v = Uri.IsWellFormedUriString( uri, UriKind.Absolute );
-		if ( v )
-		{
-			Log.Error( "is url" );
-		}
-
-		return v;
+		return Uri.IsWellFormedUriString( uri, UriKind.Absolute );
 	}
 
 	public static async Task<Texture> LoadWebImage( string URL )
