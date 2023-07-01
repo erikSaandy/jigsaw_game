@@ -174,11 +174,10 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsServer ) return;
 
 		// Load texture on client.
-		PuzzleTexture = null;
-		PuzzleTexture = Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) ).Result;
 
 		// Load materials.
 		LoadPuzzleMaterials();
+		Log.Warning( "loaded image: " + JigsawGame.Current.PuzzleTextureURL );
 
 		// Generate meshes.
 		GeneratePuzzle();
@@ -207,8 +206,11 @@ public partial class JigsawGame : GameManager
 	/// <summary>
 	/// Load material on the client.
 	/// </summary>
-	public void LoadPuzzleMaterials()
+	public async void LoadPuzzleMaterials()
 	{
+		PuzzleTexture = null;
+		PuzzleTexture = Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) ).Result;
+
 		// Only load backside mat if it hasn't been loaded on client yet.
 		//BacksideMaterial = null;
 		BacksideMaterial = Material.Load( "materials/jigsaw_backside/jigsaw_backside.vmat" );

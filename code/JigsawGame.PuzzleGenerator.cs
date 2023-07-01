@@ -89,11 +89,21 @@ public partial class JigsawGame : GameManager
 		PieceCountX = pictureWidth;
 		PieceCountY = pictureHeight;
 
+		//TODO: make this a bit nicer?
+		// too many
 		while ( PieceCountX * PieceCountY > 200 )
 		{
-			PieceCountX /= 2;
-			PieceCountY /= 2;
+			PieceCountX = (int)((float)PieceCountX * 0.75f );
+			PieceCountY = (int)((float)PieceCountY * 0.75f );
 		}
+
+		// too few
+		while ( PieceCountX * PieceCountY <= 50 )
+		{
+			PieceCountX = (int)((float)PieceCountX * 1.5f);
+			PieceCountY = (int)((float)PieceCountY * 1.5f);
+		}
+		//
 
 
 		pieceCount = PieceCountX * PieceCountY;

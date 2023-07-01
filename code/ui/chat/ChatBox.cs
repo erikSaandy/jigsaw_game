@@ -1,9 +1,7 @@
-using Sandbox.UI.Construct;
-using Sandbox.UI;
 using Sandbox;
+using Sandbox.UI;
+using Sandbox.UI.Construct;
 using System;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace Jigsaw
 {
@@ -61,6 +59,7 @@ namespace Jigsaw
 			if ( string.IsNullOrWhiteSpace( msg ) )
 				return;
 
+
 			SaySomething( msg );
 		}
 
@@ -109,19 +108,20 @@ namespace Jigsaw
 			{
 				Texture t = await JigsawGame.Current.Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( message ) );
 
-				// Did the URL load a valid image?
-				if (t?.Size != Vector2.One)
+				avatar = "icons/server.png";
+
+
+				if(!ImageLoader.TextureIsValid(t, out string error))
+				{
+					// Texture is not valid!
+					message = "URL is not valid! " + "(" + error + ")" + "\rPlease try another URL";
+				}
+				else
 				{
 					JigsawGame.Current.PuzzleTextureURL = message;
 					JigsawGame.Current.GameState = new LoadingGameState();
 
 					message = "Found a valid image! \rLoading...";
-					avatar = "icons/server.png";
-				}
-				else
-				{
-					message = "URL is not valid! \rPlease try another URL";
-					avatar = "icons/server.png";
 				}
 			}
 
@@ -141,7 +141,7 @@ namespace Jigsaw
 			// Client pawn is current lobby leader.
 			if ( JigsawGame.Current.Leader == ConsoleSystem.Caller.Client.Pawn )
 			{
-				Type gameState = JigsawGame.Current.GameState?.GetType();
+				Type gameState = typeof( VotingGameState ); //JigsawGame.Current.GameState?.GetType();
 
 				// Only accept URL during voting game state.
 				if ( gameState == typeof( VotingGameState ) )
