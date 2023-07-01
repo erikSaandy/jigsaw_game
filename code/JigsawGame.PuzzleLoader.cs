@@ -63,6 +63,8 @@ public partial class JigsawGame : GameManager
 
 		//SpawnPuzzleEntities();
 		SpawnPuzzlePiecesInGrid();
+		//await Task.Delay( 2000 );
+
 
 		GameState = new PuzzlingGameState();
 
@@ -169,24 +171,23 @@ public partial class JigsawGame : GameManager
 	}
 
 	// Load materials, meshes and assign to piece entities.
-	public void LoadClientPieces()
+	public async void LoadClientPieces()
 	{
 		if ( Game.IsServer ) return;
 
 		// Load texture on client.
 
 		// Load materials.
-		LoadPuzzleMaterials();
-		Log.Warning( "loaded image: " + JigsawGame.Current.PuzzleTextureURL );
+		await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
 
 		// Generate meshes.
-		GeneratePuzzle();
+		await Task.RunInThreadAsync( () => GeneratePuzzle() );
 
 		for(int i = 0; i < PieceEntities.Count; i++ )
 		{
 			try
 			{
-				PieceEntities[i].GenerateClient();
+				await Task.RunInThreadAsync( () => PieceEntities[i].GenerateClient() );
 			}
 			catch ( Exception e )
 			{

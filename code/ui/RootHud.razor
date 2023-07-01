@@ -34,7 +34,7 @@
 <root>
 
 	<panel class="debugText">
-[R] Reload puzzle pieces
+Enter an Image URL into chat to play!
 [F] Toggle debug display
 	</panel>
 
@@ -53,7 +53,8 @@
 		//AddChild<ChatBox>();
 		//Scoreboard = AddChild<Scoreboard>();
 		AddChild<VoiceList>();
-		AddChild<VoiceSpeaker>();
+		//AddChild<VoiceSpeaker>();
+		AddChild<VotingTimer>();
 	}
 
 	protected override int BuildHash()

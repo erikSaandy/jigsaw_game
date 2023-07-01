@@ -27,9 +27,7 @@ public partial class JigsawGame : GameManager
 	///// <summary>
 	///// GameState lets the game and joining clients know what to do.
 	///// </summary>
-	[Net] private BaseGameState gameState { get; set; }
-	public BaseGameState GameState { get { return gameState; } set { gameState = value; } }
-
+	[Net] public BaseGameState GameState { get; set; }
 
 	/// <summary>
 	/// Server random.
@@ -54,9 +52,8 @@ public partial class JigsawGame : GameManager
 		if ( Game.IsClient )
 		{
 			// Create the HUD
-			//Hud = new ExplorerHud();
-			//Hud.HudInit();
 			new RootHud();
+			//new VotingTimer();
 		}
 
 	}
@@ -94,6 +91,12 @@ public partial class JigsawGame : GameManager
 
 	}
 
+	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
+	{
+		base.ClientDisconnect( cl, reason );
+		GameState?.ClientDisconnect( cl, reason );
+	}
+
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
@@ -104,7 +107,7 @@ public partial class JigsawGame : GameManager
 
 }
 
-public partial class BaseGameState : Entity
+public partial class BaseGameState : BaseNetworkable
 {
 
 	protected void WriteConsole(string state)
@@ -117,12 +120,16 @@ public partial class BaseGameState : Entity
 		}
 	}
 
-	public override void Simulate( IClient cl ) 
+	public virtual void Simulate( IClient cl ) 
 	{
-		base.Simulate( cl );
+		//base.Simulate( cl );
 	}
 
 	public virtual void ClientJoined( IClient client )
+	{
+	}
+
+	public virtual void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
 	{
 
 	}
@@ -137,14 +144,16 @@ public partial class BaseGameState : Entity
 public partial class VotingGameState : BaseGameState
 {
 
-	public override void Simulate( IClient cl )
-	{
-		base.Simulate( cl );
-	}
+	[Net] public TimeSince Timer { get; set; } = new TimeSince();
+	private const int TimeLimit = 90;
+	public float GetTimer(){ return TimeLimit - Timer; }
 
-	public override void ClientJoined( IClient client )
+	public bool paused = false;
+
+	[ClientRpc]
+	public static void UpdateTimer()
 	{
-		base.ClientJoined( client );
+		VotingTimer.Current?.SetTimer( TimeLimit - (JigsawGame.Current.GameState as VotingGameState).Timer );
 	}
 
 	public VotingGameState() : base()
@@ -153,27 +162,39 @@ public partial class VotingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
-			//Log.Info( "waiting..." );
 
-			//// Temporary...
-			//Wait( 1 );
+			Timer = 0;
+			if ( Game.Clients.Count > 0 )
+			{
+				JigsawManager.GetNewGameLeader();
+			}
+		}
+
+		if ( Game.IsClient )
+		{
+			VotingTimer.Current.Visible = true;
 		}
 	}
-		
-	//public async void Wait(int secs)
-	//{
-	//	await Task.Delay( secs * 1000 );
-	//	JigsawGame.Current.GameState = new LoadingGameState();
-	//}
-
-}
-
-public partial class LoadingGameState : BaseGameState
-{
 
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
+
+		if ( Game.IsServer )
+		{
+			if ( paused ) return;
+
+			if ( GetTimer() <= 0 )
+			{
+				JigsawGame.Current.Leader = null;
+				ChatBox.SayInformation( cl.Name + " is too slow! \rLet's find a new leader." );
+				RestartVoting();
+			}
+			else
+			{
+				UpdateTimer();
+			}
+		}
 
 	}
 
@@ -181,24 +202,79 @@ public partial class LoadingGameState : BaseGameState
 	{
 		base.ClientJoined( client );
 	}
+	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
+	{
+		base.ClientDisconnect( cl, reason );
+
+		if ( Game.IsServer )
+		{
+			// If current leader left game, restart with new leader.
+			if ( cl.Pawn == JigsawGame.Current.Leader )
+			{
+				ChatBox.SayInformation( "The leader left the game! \rLet's find a new leader." );
+				RestartVoting();
+			}
+		}
+	}
+
+	private async void RestartVoting()
+	{
+		paused = true;
+		int waitSeconds = 3;
+		await Task.Delay( waitSeconds * 1000 );
+		JigsawGame.Current.GameState = new VotingGameState();
+	}
+
+}
+
+public partial class LoadingGameState : BaseGameState
+{
 	public LoadingGameState() : base()
 	{
-
 		WriteConsole( "Loading" );
+
+		// NOTE: Game.IsClient doesn't work here. I guess server takes priority, and clients doesn't have a chance.
 
 		if ( Game.IsServer )
 		{
 			// TODO: TIMER! But only if there are more than one player in the game.
-			
+
 			Log.Info( "Loading client meshes..." );
 			JigsawGame.Current.PuzzleLoaderInit();
 		}
+
+		VotingTimer.Current.Visible = false;
+	}
+
+	public override void Simulate( IClient cl )
+	{
+		base.Simulate( cl );
+	}
+
+	public override void ClientJoined( IClient client )
+	{
+		base.ClientJoined( client );
 	}
 
 }
 
 public partial class PuzzlingGameState : BaseGameState
 {
+	public PuzzlingGameState() : base()
+	{
+		WriteConsole( "Puzzling" );
+
+		if ( Game.IsClient )
+		{
+			VotingTimer.Current.Visible = false;
+			JigsawGame.Current.LoadClientPieces();
+		}
+
+		if ( Game.IsServer )
+		{
+		}
+
+	}
 
 	public override void Simulate( IClient cl )
 	{
@@ -208,21 +284,6 @@ public partial class PuzzlingGameState : BaseGameState
 	public override void ClientJoined( IClient client )
 	{
 		base.ClientJoined( client );
-	}
-
-	public PuzzlingGameState() : base()
-	{
-		WriteConsole( "Puzzling" );
-
-		if ( Game.IsClient )
-		{
-			JigsawGame.Current.LoadClientPieces();
-		}
-
-		if(Game.IsServer)
-		{
-		}
-
 	}
 
 }
@@ -232,7 +293,13 @@ public partial class EndingGameState : BaseGameState
 
 	public EndingGameState() : base()
 	{
+		WriteConsole( "Ending" );
+		Log.Warning( "Puzzle is finished! wooooo! Congratulations." );
 
+		if ( Game.IsServer )
+		{
+			RestartGame();
+		}
 	}
 
 	public override void Simulate( IClient cl )
@@ -243,6 +310,13 @@ public partial class EndingGameState : BaseGameState
 	public override void ClientJoined( IClient client )
 	{
 		base.ClientJoined( client );
+	}
+
+	private async void RestartGame()
+	{
+		int waitSeconds = 5;
+		await Task.Delay( waitSeconds * 1000 );
+		JigsawGame.Current.GameState = new VotingGameState();
 	}
 
 }

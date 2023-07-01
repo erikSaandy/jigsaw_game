@@ -63,16 +63,21 @@ namespace Jigsaw
 			SaySomething( msg );
 		}
 
-		public void AddEntry( string name, string message, string avatar, string lobbyState = null )
+		public void AddEntry( string name, string message, string avatar, string lobbyState = null, bool isLeader = false )
 		{
-			var e = Canvas.AddChild<ChatEntry>();
 
+			var e = Canvas.AddChild<ChatEntry>();
+			
 			e.Message.Text = message;
 			e.NameLabel.Text = name;
 			e.Avatar.SetTexture( avatar );
+			e.LeaderImage.SetTexture( "icons/leader.png" );
 
 			e.SetClass( "noname", string.IsNullOrEmpty( name ) );
 			e.SetClass( "noavatar", string.IsNullOrEmpty( avatar ) );
+			e.SetClass( "noleader", !isLeader );
+			e.SetClass( "leader", isLeader );
+
 
 			if ( lobbyState == "ready" || lobbyState == "staging" )
 			{
@@ -82,10 +87,10 @@ namespace Jigsaw
 
 
 		[ConCmd.Client( "add_chat", CanBeCalledFromServer = true )]
-		public static void AddChatEntry( string name, string message, string avatar = null, string lobbyState = null )
+		public static void AddChatEntry( string name, string message, string avatar = null, string lobbyState = null, bool isLeader = false )
 		{
 
-			Current?.AddEntry( name, message, avatar, lobbyState );
+			Current?.AddEntry( name, message, avatar, lobbyState, isLeader );
 
 			// Only log clientside if we're not the listen server host
 			if ( !Game.IsListenServer )
@@ -106,22 +111,28 @@ namespace Jigsaw
 			string avatar = "";
 			if(MessageIsPuzzleURL( message ) )
 			{
+				(JigsawGame.Current.GameState as VotingGameState).paused = true;
+
 				Texture t = await JigsawGame.Current.Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( message ) );
-
-				avatar = "icons/server.png";
-
 
 				if(!ImageLoader.TextureIsValid(t, out string error))
 				{
 					// Texture is not valid!
-					message = "URL is not valid! " + "(" + error + ")" + "\rPlease try another URL";
+					SayInformation( "URL is not valid! " + "(" + error + ")" + "\rPlease try another URL" );
+
+					(JigsawGame.Current.GameState as VotingGameState).paused = false;
+					return;
 				}
 				else
 				{
 					JigsawGame.Current.PuzzleTextureURL = message;
 					JigsawGame.Current.GameState = new LoadingGameState();
 
-					message = "Found a valid image! \rLoading...";
+					SayInformation( "Found a valid image! \rLet's get it up and running." );
+
+					(JigsawGame.Current.GameState as VotingGameState).paused = false;
+					JigsawGame.Current.Leader = null;
+					return;
 				}
 			}
 
@@ -133,15 +144,27 @@ namespace Jigsaw
 
 			if ( avatar == "" ) avatar = $"avatar:{ConsoleSystem.Caller?.SteamId}";
 
-			AddChatEntry( To.Everyone, ConsoleSystem.Caller?.Name ?? "[Server]", message, avatar );
+			bool isLeader = ConsoleSystem.Caller == JigsawGame.Current.Leader?.Client;
+			AddChatEntry( To.Everyone, ConsoleSystem.Caller?.Name ?? "[Server]", message, avatar, isLeader: isLeader);
+		}
+
+		[ConCmd.Server]
+		public static void SayInformation( string message )
+		{
+			string avatar = "icons/info.png";
+			AddChatEntry( To.Everyone, "", message, avatar );
 		}
 
 		private static bool MessageIsPuzzleURL(string message)
 		{
+			if ( ConsoleSystem.Caller == null ) return false;
+
 			// Client pawn is current lobby leader.
 			if ( JigsawGame.Current.Leader == ConsoleSystem.Caller.Client.Pawn )
 			{
-				Type gameState = typeof( VotingGameState ); //JigsawGame.Current.GameState?.GetType();
+				// TODO: reset this. This is temporary for debugging purposes.
+				//Type gameState = typeof( VotingGameState );
+				Type gameState = JigsawGame.Current.GameState?.GetType();
 
 				// Only accept URL during voting game state.
 				if ( gameState == typeof( VotingGameState ) )

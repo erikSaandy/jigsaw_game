@@ -292,6 +292,9 @@ public partial class PuzzlePiece : ModelEntity
 			c.rootPiece = otherRoot;
 		}
 
+		// Check completion state of the puzzle.
+		JigsawManager.CheckPuzzleCompletionRelative( otherRoot );
+
 		// // // // //
 
 		// Check if piece has a neighboring side with this piece, and connect them.

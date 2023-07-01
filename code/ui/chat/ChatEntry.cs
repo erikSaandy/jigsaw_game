@@ -10,12 +10,14 @@ namespace Jigsaw
 		public Label NameLabel { get; internal set; }
 		public Label Message { get; internal set; }
 		public Image Avatar { get; internal set; }
+		public Image LeaderImage { get; internal set; }
 
 		public RealTimeSince TimeSinceBorn = 0;
 
 		public ChatEntry()
 		{
 			Avatar = Add.Image();
+			LeaderImage = Add.Image( "LeaderImage", "leaderimage" );
 			NameLabel = Add.Label( "Name", "name" );
 			Message = Add.Label( "Message", "message" );
 		}
