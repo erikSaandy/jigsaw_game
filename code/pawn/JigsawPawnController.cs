@@ -47,6 +47,11 @@ public class JigsawPawnController : EntityComponent<JigsawPawn>
 			DoJump();
 		}
 
+		if ( Input.Pressed( "reload" ) )
+		{
+			JigsawGame.Current.GameState = new EndingGameState();
+		}
+
 		var mh = new MoveHelper( Entity.Position, Entity.Velocity );
 		mh.Trace = mh.Trace.Size( Entity.Hull ).Ignore( Entity );
 

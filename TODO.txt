@@ -1,22 +1,12 @@
 TODO
-
-- Pick up group from any piece, not just root.
-- Add physics to active piece, so that it doesn't move through walls.
+- Viewmodel
+- Pickup pieces with physics. Heaver with more pieces. 9+ pieces is heaviest? shouldn't be too annoying to drag across the map. (TK physics and animation)
+- Puzzle scene is a no-go. It's just too bad if you acidentally build a group too big to fit through a door for instance.
 - Make sure pieces spawn close to already spawned pieces to prevent pieces spawning way in the distance (max radius thing) (make sure they aren't spawned in a ordered line)
-- Viewmodel?
-- TK physics and animation
+- Loading puzzles seems pretty unstable... especially when trying to spawn pieces on the navmesh. fix it you dummy.
 
-- VC positional
-public override void OnVoicePlayed(IClient cl)
-{
-	cl.Voice.WantsStereo = true;
-	base.OnVoicePlayed(cl);
-}
+-crouching
+-IUSE functionality (can't open doors etc)
 
-- Platform to place pieces into, limit group size outside of platform.
-can't pick up correctly placed pieces from the grid
-- Limit aspect ratio of valid puzzle image to make max x and y dimensions manageable and reasonable. 10x20/20x10  pieces (1:2 aspect)?
-With this limit, platform needs to be 20x20 to accomodate any image. 
-(maybe don't limit aspect, and only limit piece count on any axis to be <= 20? In this case, weird aspect ratios would be fine, but the puzzles might be 1x20 pieces...)
 
 

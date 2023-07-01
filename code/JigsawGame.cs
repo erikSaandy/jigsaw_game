@@ -145,7 +145,7 @@ public partial class VotingGameState : BaseGameState
 {
 
 	[Net] public TimeSince Timer { get; set; } = new TimeSince();
-	private const int TimeLimit = 90;
+	private const int TimeLimit = 120;
 	public float GetTimer(){ return TimeLimit - Timer; }
 
 	public bool paused = false;
@@ -294,11 +294,19 @@ public partial class EndingGameState : BaseGameState
 	public EndingGameState() : base()
 	{
 		WriteConsole( "Ending" );
-		Log.Warning( "Puzzle is finished! wooooo! Congratulations." );
 
 		if ( Game.IsServer )
 		{
 			RestartGame();
+
+			string plural = "";
+			if(Game.Clients.Count > 1)
+			{	
+				plural = "s";
+			}
+
+			ChatBox.SayInformation( "You crazy bastard" + plural + ", you actually did it... \rCongratulations!" );
+			Log.Warning( "Puzzle is finished! wooooo! Congratulations." );
 		}
 	}
 
