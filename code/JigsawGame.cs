@@ -246,11 +246,10 @@ public partial class LoadingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
-			// TODO: TIMER! But only if there are more than one player in the game.
-
-			Log.Info( "Loading client meshes..." );
-			JigsawGame.Current.PuzzleLoaderInit();
+			Log.Info( "Loading server puzzles pieces..." );
+			JigsawGame.Current.LoadEntities();
 		}
+
 	}
 
 	public override void Simulate( IClient cl )
@@ -271,15 +270,10 @@ public partial class PuzzlingGameState : BaseGameState
 	{
 		WriteConsole( "Puzzling" );
 
-		if ( Game.IsClient )
+		if ( Game.IsClient)
 		{
 			VotingTimer.Current.Visible = false;
 			JigsawGame.Current.LoadClientPieces();
-		}
-
-		if ( Game.IsServer )
-		{
-
 		}
 
 	}
@@ -326,6 +320,7 @@ public partial class EndingGameState : BaseGameState
 	public override void ClientJoined( IClient client )
 	{
 		base.ClientJoined( client );
+
 	}
 
 	private async void RestartGame()

@@ -1,4 +1,4 @@
-using Sandbox;
+﻿using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
 using System;
@@ -126,11 +126,10 @@ namespace Jigsaw
 				else
 				{
 					// VALID TEXTURE
-					SayInformation( "Found a valid image! \rLet's get it up and running." );
+					SayInformation( "Found a valid image! 😎" );
 
 					JigsawGame.Current.PuzzleTextureURL = message;
 					JigsawGame.Current.GameState = new LoadingGameState();
-
 					JigsawGame.Current.Leader = null;
 					return;
 				}
