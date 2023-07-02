@@ -7,30 +7,40 @@
 @inherits Panel
 
 <style>
-	.votingTimer {
 
-		opacity: 0.8;
-
+	box {
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
 		align-items: center;
+		justify-content: center;
+	}
 
+	.container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-		flex-direction: column;
-
-		border-radius: 40px;
-
-		margin-bottom:25px;
+		border-radius: 40px 
+		
+		color: white;
+		font-family: Poppins;
+		font-weight: 600;
 		width: 140px;
 		height: 80px;
 
-		background-color: black;
+		margin-top:25px;
+		margin-right:25px;
+		
+		background-color: rgba(black, 0.5);
 		backdrop-filter: blur( 5px );
-	
+
+		/*align-self:center;
+			align-self:auto;
+			margin-top:25px;
+			;*/
+
 	}
 
-	.timer {
+	.container timer {
 		opacity: 1;
 
 		font-size: 30px;
@@ -44,9 +54,10 @@
 		
 		text-stroke: 5px black;
 
-		/*text-align: center;*/
+		text-align: center;
 		width: 100%;
 		height: 100%;
+
 	}
 </style>
 
@@ -54,24 +65,26 @@
 <root>
 	@if (Visible)
 	{
-		<panel class="votingtimer">
-			<panel class="timer">
+		<panel class="container">
+			<timer>
 				@Timer
-			</panel>
+			</timer>
 		</panel>
+
 	}
 </root>
 
 @code {
-	public static VotingTimer Current;
+	public static VotingTimer Current { get; set; }
 
-	public string Timer = "0.0";
+	public string Timer { get; set; } = "0.0";
 	public bool Visible = false;
 
-	public void SetTimer(float t)
+	[ClientRpc]
+	public static void SetTimer(float t)
 	{
 		t = (t < 0) ? 0 : t;
-		Timer = t.ToString("0");
+		Current.Timer = t.ToString("0");
 	}
 
 	public VotingTimer()

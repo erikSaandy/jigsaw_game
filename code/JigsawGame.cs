@@ -45,16 +45,13 @@ public partial class JigsawGame : GameManager
 			Leader = null;
 			Rand = new Random();
 
-			GameState = new VotingGameState();
 		}
-
 
 		if ( Game.IsClient )
 		{
-			// Create the HUD
 			new RootHud();
-			//new VotingTimer();
 		}
+
 
 	}
 
@@ -84,24 +81,30 @@ public partial class JigsawGame : GameManager
 			pawn.Transform = tx;
 		}
 
-		// Make sure someone is leader.
-		if ( Leader == null ) { Leader = pawn; }
+		// init gamestate when first client joined.
+		if(GameState == null)
+		{
+			GameState = new VotingGameState();
+		}
 
-		GameState?.ClientJoined( client );
+		if(Game.IsClient)
+			Log.Info( "clientJoined" );
+
+		Current.GameState?.ClientJoined( client );
 
 	}
 
 	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
 	{
 		base.ClientDisconnect( cl, reason );
-		GameState?.ClientDisconnect( cl, reason );
+		Current.GameState?.ClientDisconnect( cl, reason );
 	}
 
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
 
-		GameState?.Simulate( cl );
+		Current.GameState?.Simulate( cl );
 
 	}
 
@@ -145,16 +148,10 @@ public partial class VotingGameState : BaseGameState
 {
 
 	[Net] public TimeSince Timer { get; set; } = new TimeSince();
-	private const int TimeLimit = 120;
+	private const int TimeLimit = 10;
 	public float GetTimer(){ return TimeLimit - Timer; }
 
 	public bool paused = false;
-
-	[ClientRpc]
-	public static void UpdateTimer()
-	{
-		VotingTimer.Current?.SetTimer( TimeLimit - (JigsawGame.Current.GameState as VotingGameState).Timer );
-	}
 
 	public VotingGameState() : base()
 	{
@@ -162,10 +159,10 @@ public partial class VotingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
-
 			Timer = 0;
 			if ( Game.Clients.Count > 0 )
 			{
+				// Find new leader.
 				JigsawManager.GetNewGameLeader();
 			}
 		}
@@ -192,7 +189,7 @@ public partial class VotingGameState : BaseGameState
 			}
 			else
 			{
-				UpdateTimer();
+				VotingTimer.SetTimer( TimeLimit - (JigsawGame.Current.GameState as VotingGameState).Timer );
 			}
 		}
 
@@ -201,6 +198,18 @@ public partial class VotingGameState : BaseGameState
 	public override void ClientJoined( IClient client )
 	{
 		base.ClientJoined( client );
+
+		if ( Game.IsClient ) return;
+
+		// Make sure late clients know who is leader and a vote is going on.
+		if ( client != JigsawGame.Current.Leader?.Client )
+		{
+			ChatBox.SayInformation( To.Single( client ), 
+				"Welcome " + client.Name + "!\r"+
+				JigsawGame.Current.Leader.Client.Name + " is currently chosing a puzzle image. Please hold on!"
+				);
+		}
+
 	}
 	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
 	{
@@ -208,13 +217,13 @@ public partial class VotingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
-			// If current leader left game, restart with new leader.
-			if ( cl.Pawn == JigsawGame.Current.Leader )
+			if ( cl == JigsawGame.Current.Leader.Client )
 			{
 				ChatBox.SayInformation( "The leader left the game! \rLet's find a new leader." );
 				RestartVoting();
 			}
 		}
+
 	}
 
 	private async void RestartVoting()
@@ -242,8 +251,6 @@ public partial class LoadingGameState : BaseGameState
 			Log.Info( "Loading client meshes..." );
 			JigsawGame.Current.PuzzleLoaderInit();
 		}
-
-		VotingTimer.Current.Visible = false;
 	}
 
 	public override void Simulate( IClient cl )
@@ -272,6 +279,7 @@ public partial class PuzzlingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
+
 		}
 
 	}

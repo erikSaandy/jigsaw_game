@@ -17,7 +17,7 @@ namespace Jigsaw
 		public ChatEntry()
 		{
 			Avatar = Add.Image();
-			LeaderImage = Add.Image( "LeaderImage", "leaderimage" );
+			LeaderImage = Add.Image( "ChatBox.scss", "leaderimage" );
 			NameLabel = Add.Label( "Name", "name" );
 			Message = Add.Label( "Message", "message" );
 		}
@@ -26,7 +26,7 @@ namespace Jigsaw
 		{
 			base.Tick();
 
-			if ( TimeSinceBorn > 10 )
+			if ( TimeSinceBorn > 15 )
 			{
 				Delete();
 			}

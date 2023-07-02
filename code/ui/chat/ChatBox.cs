@@ -117,7 +117,7 @@ namespace Jigsaw
 
 				if(!ImageLoader.TextureIsValid(t, out string error))
 				{
-					// Texture is not valid!
+					// NOT VALID TEXTURE
 					SayInformation( "URL is not valid! " + "(" + error + ")" + "\rPlease try another URL" );
 
 					(JigsawGame.Current.GameState as VotingGameState).paused = false;
@@ -125,12 +125,12 @@ namespace Jigsaw
 				}
 				else
 				{
+					// VALID TEXTURE
+					SayInformation( "Found a valid image! \rLet's get it up and running." );
+
 					JigsawGame.Current.PuzzleTextureURL = message;
 					JigsawGame.Current.GameState = new LoadingGameState();
 
-					SayInformation( "Found a valid image! \rLet's get it up and running." );
-
-					(JigsawGame.Current.GameState as VotingGameState).paused = false;
 					JigsawGame.Current.Leader = null;
 					return;
 				}
@@ -148,11 +148,18 @@ namespace Jigsaw
 			AddChatEntry( To.Everyone, ConsoleSystem.Caller?.Name ?? "[Server]", message, avatar, isLeader: isLeader);
 		}
 
-		[ConCmd.Server]
+		[ConCmd.Server( "say_information" )]
 		public static void SayInformation( string message )
 		{
 			string avatar = "icons/info.png";
 			AddChatEntry( To.Everyone, "", message, avatar );
+		}
+
+		[ConCmd.Server( "say_information_to" )]
+		public static void SayInformation( To to, string message )
+		{
+			string avatar = "icons/info.png";
+			AddChatEntry(to, "", message, avatar );
 		}
 
 		private static bool MessageIsPuzzleURL(string message)

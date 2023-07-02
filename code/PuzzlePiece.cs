@@ -86,7 +86,7 @@ public partial class PuzzlePiece : ModelEntity
 		Model = JigsawGame.Current.PieceModels?[Index];
 		GetBoundingBox( out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
-		GeneratePipCollision();
+		//GeneratePipCollision();
 	}
 
 	private void GetBoundingBox(out Vector3 mins, out Vector3 maxs)

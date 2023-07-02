@@ -1,16 +1,15 @@
-﻿chatbox
-{
+﻿chatbox {
 	position: absolute;
-	bottom: 200px;
-	left: 100px;
+	bottom: 50px;
+	left: 50px;
 	z-index: 100;
 	flex-direction: column;
 	width: 500px;
 	font-family: Poppins;
 	font-size: 13px;
+	font-weight: 600;
 
-	textentry
-	{
+	textentry {
 		background-color: black;
 		opacity: 0;
 		color: white;
@@ -22,23 +21,22 @@
 		width: 100%;
 	}
 
-	.chat_canvas
-	{
+	.chat_canvas {
 		flex-direction: column;
 		align-items: flex-start;
 	}
 
-	&.open
-	{
-		textentry
-		{
+	&.open {
+		textentry {
 			opacity: 1;
 			backdrop-filter: blur( 10px );
+			border-radius: 30px;
 		}
 	}
 }
 
 chatentry {
+	border-radius: 30px;
 	background-color: rgba( black, 0.7 );
 	margin-bottom: 5px;
 	color: white;
@@ -47,12 +45,15 @@ chatentry {
 	max-height: 200px;
 	flex-shrink: 0;
 	flex-grow: 0;
-	padding: 12px;
-	padding-left: 45px;
+	padding: 18px;
+	padding-left: 48px;
 	min-height: 47px;
 	max-width: 100%;
 	transform: scale( 1 );
 	backdrop-filter: blur( 5px );
+
+	/*mask: linear-gradient(to bottom, rgba(0,0,0, 1) 0, rgba(0,0,0, 1) 40%, rgba(0,0,0, 0) 95%, rgba(0,0,0, 0) 0 ) 100% 50% / 100% 100% repeat-y;
+	*/
 
 	&:intro {
 		max-height: 0px;
@@ -74,8 +75,8 @@ chatentry {
 		min-height: 32px;
 		border-radius: 100px;
 		position: absolute;
-		left: 6px;
-		top: 6px;
+		left: 7px;
+		top: 12px;
 	}
 
 	.leaderimage {
@@ -84,8 +85,8 @@ chatentry {
 		min-height: 32px;
 		border-radius: 100px;
 		position: absolute;
-		left: 6px;
-		top: -12px;
+		left: 7px;
+		top: -7px;
 	}
 
 	.name {

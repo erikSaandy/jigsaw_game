@@ -85,7 +85,7 @@ public abstract class JigsawManager : BaseGameManager
 		else
 		{
 			// If more players, find new leader that isn't current leader.
-			JigsawGame.Current.Leader = (JigsawPawn)Game.Clients.Where( (x => x.Pawn != JigsawGame.Current.Leader) ).OrderBy( x => Guid.NewGuid() ).FirstOrDefault().Pawn;
+			JigsawGame.Current.Leader = (JigsawPawn)Game.Clients.Where( (x => x.Pawn != JigsawGame.Current.Leader) ).OrderBy( x => Guid.NewGuid() ).First().Pawn;
 		}
 
 		ChatBox.SayInformation( JigsawGame.Current.Leader.Client.Name + " is now leader! \rSubmit an image before the time runs out." );

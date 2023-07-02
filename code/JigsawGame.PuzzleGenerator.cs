@@ -40,10 +40,6 @@ public partial class JigsawGame : GameManager
 	/// </summary>
     public void GeneratePuzzle() {
 
-		IsGenerated = false;
-
-		if ( IsGenerated ) { return; }
-
 		float t = Time.Now;
 
         if (mesher == null)

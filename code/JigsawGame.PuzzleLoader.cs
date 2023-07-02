@@ -61,9 +61,9 @@ public partial class JigsawGame : GameManager
 
 		// Spawning entity pieces //
 
-		//SpawnPuzzleEntities();
-		SpawnPuzzlePiecesInGrid();
-		//await Task.Delay( 2000 );
+		SpawnPuzzleEntities();
+		//SpawnPuzzlePiecesInGrid();
+		await Task.Delay( 2000 );
 
 
 		GameState = new PuzzlingGameState();
@@ -81,7 +81,7 @@ public partial class JigsawGame : GameManager
 		DeletePieceEntities();
 
 		int pieceCount = PieceCountX * PieceCountY;
-		PieceEntities = new PuzzlePiece[pieceCount];
+		Current.PieceEntities = new PuzzlePiece[pieceCount];
 
 		List<PieceSpawner> spawners = Entity.All.OfType<PieceSpawner>().ToList();
 		IEnumerable<NavArea> areas = NavMesh.GetNavAreas();
@@ -95,8 +95,8 @@ public partial class JigsawGame : GameManager
 			// If map has spawners, prioritize.
 			if ( spawners.Count > 0 )
 			{
-				PieceEntities[i].Position = GetSpawnPosition( ref spawners );
-				PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+				Current.PieceEntities[i].Position = GetSpawnPosition( ref spawners );
+				Current.PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
 			}
 			else if ( areas?.Count() > 0 )
 			{
@@ -112,7 +112,7 @@ public partial class JigsawGame : GameManager
 				Log.Error( "wow, the map doesn't have a nav mesh. bummer." );
 			}
 
-			PieceEntities[i] = ent;
+			Current.PieceEntities[i] = ent;
 		}
 
 	}
@@ -124,7 +124,7 @@ public partial class JigsawGame : GameManager
 
 		DeletePieceEntities();
 		int count = PieceCountX * PieceCountY;
-		PieceEntities = new PuzzlePiece[count];
+		Current.PieceEntities = new PuzzlePiece[count];
 
 		for ( int i = 0; i < count; i++ )
 		{
@@ -138,7 +138,7 @@ public partial class JigsawGame : GameManager
 			Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 ) - (spawnArea / 2);
 			ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Up * 4);
 
-			PieceEntities[i] = ent;
+			Current.PieceEntities[i] = ent;
 		}
 	}
 
@@ -171,23 +171,27 @@ public partial class JigsawGame : GameManager
 	}
 
 	// Load materials, meshes and assign to piece entities.
+	[ClientRpc]
 	public async void LoadClientPieces()
 	{
 		if ( Game.IsServer ) return;
 
-		// Load texture on client.
+		Log.Warning( "loading pieces on client..." );
 
 		// Load materials.
-		await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
+		//await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
+		LoadPuzzleMaterials();
 
 		// Generate meshes.
 		await Task.RunInThreadAsync( () => GeneratePuzzle() );
+		//GeneratePuzzle();
 
-		for(int i = 0; i < PieceEntities.Count; i++ )
+		for (int i = 0; i < Current.PieceEntities.Count; i++ )
 		{
 			try
 			{
-				await Task.RunInThreadAsync( () => PieceEntities[i].GenerateClient() );
+				Current.PieceEntities[i].GenerateClient();
+				//await Task.RunInThreadAsync( () => Current.PieceEntities[i].GenerateClient() );
 			}
 			catch ( Exception e )
 			{
@@ -209,8 +213,7 @@ public partial class JigsawGame : GameManager
 	/// </summary>
 	public async void LoadPuzzleMaterials()
 	{
-		PuzzleTexture = null;
-		PuzzleTexture = Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) ).Result;
+		PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
 
 		// Only load backside mat if it hasn't been loaded on client yet.
 		//BacksideMaterial = null;
@@ -227,7 +230,7 @@ public partial class JigsawGame : GameManager
 	/// </summary>
 	private void DeletePieceEntities()
 	{
-		foreach(PuzzlePiece p in PieceEntities)
+		foreach(PuzzlePiece p in Current.PieceEntities )
 		{
 			p.Delete();
 		}
