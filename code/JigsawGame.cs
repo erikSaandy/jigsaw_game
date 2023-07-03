@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 //
 // You don't need to put things in a namespace, but it doesn't hurt.
@@ -25,17 +24,10 @@ public partial class JigsawGame : GameManager
 
 	public static new JigsawGame Current { get; protected set; }
 
-	// GameState takes care of the basic game loop.
-	[Net, Change] private BaseGameState gameState { get; set; }
-
-	// Call OnExit() on server.
-	public BaseGameState GameState { get { return gameState; } set { gameState?.OnExit(); gameState = value; } }
-
-	public void OngameStateChanged( BaseGameState old, BaseGameState _new )
-	{
-		// Call OnExit() on client.
-		old?.OnExit();
-	}
+	///// <summary>
+	///// GameState lets the game and joining clients know what to do.
+	///// </summary>
+	[Net] public BaseGameState GameState { get; set; }
 
 	/// <summary>
 	/// Server random.
@@ -52,12 +44,14 @@ public partial class JigsawGame : GameManager
 		{
 			Leader = null;
 			Rand = new Random();
+
 		}
 
 		if ( Game.IsClient )
 		{
 			new RootHud();
 		}
+
 
 	}
 
@@ -67,8 +61,6 @@ public partial class JigsawGame : GameManager
 	public override void ClientJoined( IClient client )
 	{
 		base.ClientJoined( client );
-
-		ChatBox.SayInformation( client.Name + " has joined the game." );
 
 		// Create a pawn for this client to play with
 		var pawn = new JigsawPawn();
@@ -95,22 +87,12 @@ public partial class JigsawGame : GameManager
 			GameState = new VotingGameState();
 		}
 
+		if(Game.IsClient)
+			Log.Info( "clientJoined" );
+
 		Current.GameState?.ClientJoined( client );
 
-		Current.ClientSpawned( To.Single( client ) );
 	}
-
-	[ClientRpc]
-	public void ClientSpawned( )
-	{
-		Current.gameState?.ClientSpawned();
-	}
-
-	//public override void Spawn()
-	//{
-	//	base.Spawn();
-	//	Current.GameState?.ClientSpawn();
-	//}
 
 	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
 	{
@@ -130,10 +112,6 @@ public partial class JigsawGame : GameManager
 
 public partial class BaseGameState : BaseNetworkable
 {
-	public BaseGameState()
-	{
-
-	}
 
 	protected void WriteConsole(string state)
 	{
@@ -150,20 +128,8 @@ public partial class BaseGameState : BaseNetworkable
 		//base.Simulate( cl );
 	}
 
-	/// <summary>
-	/// Server-side
-	/// </summary>
-	/// <param name="client"></param>
 	public virtual void ClientJoined( IClient client )
 	{
-	}
-
-	/// <summary>
-	/// Only spawned client-side on the client that spawned.
-	/// </summary>
-	public virtual void ClientSpawned()
-	{
-
 	}
 
 	public virtual void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
@@ -171,7 +137,7 @@ public partial class BaseGameState : BaseNetworkable
 
 	}
 
-	public virtual void OnExit()
+	public BaseGameState()
 	{
 
 	}
@@ -182,7 +148,7 @@ public partial class VotingGameState : BaseGameState
 {
 
 	[Net] public TimeSince Timer { get; set; } = new TimeSince();
-	private const int TimeLimit = 120;
+	private const int TimeLimit = 10;
 	public float GetTimer(){ return TimeLimit - Timer; }
 
 	public bool paused = false;
@@ -236,28 +202,15 @@ public partial class VotingGameState : BaseGameState
 		if ( Game.IsClient ) return;
 
 		// Make sure late clients know who is leader and a vote is going on.
-		if ( JigsawGame.Current.Leader != null && client != JigsawGame.Current.Leader?.Client )
+		if ( client != JigsawGame.Current.Leader?.Client )
 		{
 			ChatBox.SayInformation( To.Single( client ), 
 				"Welcome " + client.Name + "!\r"+
 				JigsawGame.Current.Leader.Client.Name + " is currently chosing a puzzle image. Please hold on!"
 				);
 		}
+
 	}
-
-	public override void ClientSpawned()
-	{
-		base.ClientSpawned();
-
-		// If someone joins during subsequent voting state, when old puzzle is still in the world...
-		// Spawn puzzle!
-
-		if ( Game.IsClient && JigsawGame.Current.PieceEntities.Count > 0 )
-		{
-			JigsawGame.Current.LoadClientPieces();
-		}
-	}
-
 	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
 	{
 		base.ClientDisconnect( cl, reason );
@@ -309,17 +262,6 @@ public partial class LoadingGameState : BaseGameState
 		base.ClientJoined( client );
 	}
 
-	public override void OnExit()
-	{
-		base.OnExit();
-
-		if ( Game.IsClient )
-		{
-			VotingTimer.Current.Visible = false;
-			JigsawGame.Current.LoadClientPieces();
-		}
-	}
-
 }
 
 public partial class PuzzlingGameState : BaseGameState
@@ -327,6 +269,12 @@ public partial class PuzzlingGameState : BaseGameState
 	public PuzzlingGameState() : base()
 	{
 		WriteConsole( "Puzzling" );
+
+		if ( Game.IsClient)
+		{
+			VotingTimer.Current.Visible = false;
+			JigsawGame.Current.LoadClientPieces();
+		}
 
 	}
 
@@ -338,16 +286,6 @@ public partial class PuzzlingGameState : BaseGameState
 	public override void ClientJoined( IClient client )
 	{
 		base.ClientJoined( client );
-	}
-
-	public override void ClientSpawned( )
-	{
-		base.ClientSpawned( );
-
-		if ( Game.IsClient )
-		{
-			JigsawGame.Current.LoadClientPieces();
-		}
 	}
 
 }
@@ -383,16 +321,6 @@ public partial class EndingGameState : BaseGameState
 	{
 		base.ClientJoined( client );
 
-	}
-
-	public override void ClientSpawned()
-	{
-		base.ClientSpawned();
-
-		if ( Game.IsClient )
-		{
-			JigsawGame.Current.LoadClientPieces();
-		}
 	}
 
 	private async void RestartGame()
