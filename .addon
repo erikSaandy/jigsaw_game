@@ -85,7 +85,8 @@
         },
         {
           "a": "puzzlepiece",
-          "b": "puzzlepiece"
+          "b": "puzzlepiece",
+          "r": "Collide"
         },
         {
           "a": "player",

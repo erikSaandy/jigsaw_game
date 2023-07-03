@@ -1,7 +1,10 @@
 ﻿using Saandy;
 using Sandbox;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Numerics;
 
 namespace Jigsaw;
@@ -13,14 +16,41 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private readonly int ActivePieceRotationStep = 30;
 
+	private float SmoothTime = 1f;
+	private Vector3 dampVelocity = Vector3.Zero;
+	private Vector3 ActivePiecePositionOld = Vector3.Zero;
+
 	public void SimulateActivePiece( IClient cl )
 	{
+
+		if ( Game.IsClient ) return;
 
 		PuzzlePieceInput();
 
 		if ( ActivePiece == null ) return;
 
-		ActivePiece.Position = EyePosition + (EyeRotation.Forward * 64); // + (EyeRotation.Right * 64);
+		#region Active Piece Position
+
+		Vector3 pWanted = GetWantedPosition();
+
+		ActivePiecePositionOld = ActivePiece.Position;
+		ActivePiece.Position = Vector3.SmoothDamp( ActivePiece.Position, pWanted, ref dampVelocity, SmoothTime, Time.Delta * 200 );
+
+		//ActivePiece.Position = Math2d.Lerp( ActivePiece.Position, pWanted, Time.Delta * 10 );
+		//ActivePiece.Position = EyePosition + (EyeRotation.Forward * 64); // + (EyeRotation.Right * 64);
+		//ActivePiece.Position = pWanted;
+
+		//float velY = ActivePiece.Velocity.y;
+		//float velZ = ActivePiece.Velocity.z;
+		//float X = Math2d.SmoothDamp( ActivePiece.Position.x, pWanted.x, ref smoothVelocityX, SmoothTime );
+		//float Y = Math2d.SmoothDamp( ActivePiece.Position.y, pWanted.y, ref smoothVelocityY, SmoothTime );
+		//float Z = Math2d.SmoothDamp( ActivePiece.Position.z, pWanted.z, ref smoothVelocityZ, SmoothTime );
+
+		//ActivePiece.Position = new Vector3(X, Y, Z); 
+		//Math2d.Lerp( ActivePiece.Position, pWanted, Time.Delta);
+		//ActivePiece.Position = GetWantedPosition();
+
+		#endregion
 
 		// Rotate active piece
 		if ( Input.Down( "attack2" ) && ActivePiece != null )
@@ -44,6 +74,37 @@ public partial class JigsawPawn : AnimatedEntity
 			ActivePiece.CheckForConnections(); 
 		}
 
+	}
+
+	private Vector3 GetWantedPosition()
+	{
+		float radius = JigsawGame.PieceScale / 2;
+
+		string[] tags = new string[3] { "solid,", "puzzlepiece", "player" };
+		PuzzlePiece.GetBoundingBox( ActivePiece.X, ActivePiece.Y, out Vector3 mins, out Vector3 maxs );
+		BBox bounds = new BBox( mins, maxs );
+
+		TraceResult trace = Trace.Box( bounds, EyePosition, EyePosition + EyeRotation.Forward * 128 )
+			.Ignore( ActivePiece, true )
+			.Run();
+
+		TraceResult nudge = Trace.Box( bounds, ActivePiece.Position, trace.EndPosition )
+			.Ignore( ActivePiece, true )
+			.Run();
+
+		//Log.Error( trace.Entity?.Name );
+		//Log.Error( nudge.Entity?.Name );
+
+		DebugOverlay.Box( trace.EndPosition, bounds.Mins, bounds.Maxs, Color.Green );
+
+		if ( !nudge.Hit )
+		{
+			return nudge.EndPosition;
+		}
+
+		DebugOverlay.Box( nudge.EndPosition, bounds.Mins, bounds.Maxs, Color.Blue );
+
+		return trace.EndPosition;
 	}
 
 	public void BuildActivePieceInput()
@@ -86,60 +147,91 @@ public partial class JigsawPawn : AnimatedEntity
 
 		if ( Game.IsClient ) return;
 
-		if ( Input.Pressed( "use" ))
+		if ( Input.Pressed( "attack1" ))
 		{
-			if ( ActivePiece != null )
-			{
-				ClearActivePiece();
-				return;
-			}
 
 			TraceResult tr = Trace.Ray(EyePosition, EyePosition + (EyeRotation.Forward * rayMag) )
 				.UseHitboxes()
 				.WithTag("puzzlepiece")
 				.Ignore(this)
-				.DynamicOnly()
 				.Run();
 
 			if (tr.Hit)
 			{
 				SetActivePiece( (tr.Entity as PuzzlePiece).GetRoot() );
 			}
-
 		}
+		else if(Input.Released("attack1"))
+		{
+			if ( ActivePiece != null )
+			{
+				DebugOverlay.Line( ActivePiece.Position, ActivePiece.Position + ActivePiece.Position - ActivePiecePositionOld, Color.Red, 10 );
+
+
+				ActivePiece.Velocity =( ActivePiece.Position - ActivePiecePositionOld ) * 20;
+				ClearActivePiece();
+				return;
+			}
+		}
+
+
 	}
 
 
 	private void SetActivePiece( PuzzlePiece piece )
 	{
-		piece.Owner = this;
-		ActivePiece = piece;
-
-		//piece.PhysicsEnabled = false;
-		piece.UsePhysicsCollision = false;
-		piece.EnableAllCollisions = false;
-		piece.Parent = this;
-		piece.HeldBy = this;
-		piece.TimeSincePickedUp = 0;
-
 		if ( Game.IsServer )
 		{
-			Angles a = piece.LocalRotation.Angles();
-			piece.LocalRotation = new Angles(
-				a.pitch - (a.pitch % ActivePieceRotationStep),
-				a.yaw - (a.yaw % ActivePieceRotationStep),
-				a.roll - (a.roll % ActivePieceRotationStep)
-				).ToRotation();
+			piece.Owner = this;
+			ActivePiece = piece;
+
+			//piece.PhysicsEnabled = false;
+			//piece.UsePhysicsCollision = false;
+			//piece.EnableAllCollisions = false;
+			//piece.EnableTraceAndQueries = true;
+
+			piece.HeldBy = this;
+			piece.TimeSincePickedUp = 0;
+
+			if ( Game.IsServer )
+			{
+				Angles a = piece.LocalRotation.Angles();
+				piece.LocalRotation = new Angles(
+					a.pitch - (a.pitch % ActivePieceRotationStep),
+					a.yaw - (a.yaw % ActivePieceRotationStep),
+					a.roll - (a.roll % ActivePieceRotationStep)
+					).ToRotation();
+
+				EnableGroupPhysics( piece, false );
+
+				ActivePiecePositionOld = ActivePiece.Position;
+			}
 		}
 
 	}
 
+	private void EnableGroupPhysics(PuzzlePiece root, bool enable = true)
+	{
+		PuzzlePiece[] group = root.GetGroupPieces().Where( x => x.IsValid ).ToArray();
+		foreach ( PuzzlePiece e in group )
+		{
+			PhysicsBody[] bodies = e.PhysicsGroup.Bodies.ToArray();
+			foreach ( PhysicsBody b in bodies )
+			{
+				b.GravityEnabled = enable;
+			}
+		}
+	}
+
 	private void ClearActivePiece()
 	{
+		if ( Game.IsServer )
+		{
+			EnableGroupPhysics( ActivePiece, true );
+		}
+
 		ActivePiece.UsePhysicsCollision = true;
 		ActivePiece.EnableAllCollisions = true;
-
-		ActivePiece.Parent = null;
 
 		//ActivePiece.Owner = null;
 		ActivePiece = null;

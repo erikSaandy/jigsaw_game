@@ -38,10 +38,15 @@ public partial class PuzzlePiece : ModelEntity
 		}
 	}
 
+	public IEnumerable<PuzzlePiece> GetGroupPieces()
+	{
+		return GetRoot().Children.Append( GetRoot() ).OfType<PuzzlePiece>();
+	}
+
 	[Net]
 	public TimeSince TimeSincePickedUp { get; set; } = 0;
 
-	private readonly int ConnectionDistance = 4;
+	private readonly int ConnectionDistance = 6;
 
 	[Net] public bool ConnectedLeft { get; set; } = false;
 	[Net] public bool ConnectedRight { get; set; } = false;
@@ -72,7 +77,7 @@ public partial class PuzzlePiece : ModelEntity
 		//SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
 
 
-		GetBoundingBox( out Vector3 mins, out Vector3 maxs );
+		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
 		GeneratePipCollision();
 
@@ -84,12 +89,12 @@ public partial class PuzzlePiece : ModelEntity
 	public void GenerateClient()
 	{
 		Model = JigsawGame.Current.PieceModels?[Index];
-		GetBoundingBox( out Vector3 mins, out Vector3 maxs );
+		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
 		//GeneratePipCollision();
 	}
 
-	private void GetBoundingBox(out Vector3 mins, out Vector3 maxs)
+	public static void GetBoundingBox(int X, int Y, out Vector3 mins, out Vector3 maxs)
 	{
 		// TODO: Edge pieces are inaccurate, and pips are not accounted for.
 

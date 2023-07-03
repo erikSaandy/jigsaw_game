@@ -12,6 +12,9 @@ namespace Saandy {
         public const float Deg2Rad = PI / 180f;
         public const float Rad2Deg = 180f / PI;
 
+		        // A representation of positive infinity (RO).
+        public const float Infinity = Single.PositiveInfinity;
+
 		public static float SolveVerticalLaunchSpeed( float intendedApexHeight, float gravity = 9.81f )
 		{
 			return (float)Math.Sqrt( 2f * gravity * intendedApexHeight );
@@ -235,7 +238,90 @@ namespace Saandy {
 			return min + (input - inputMin) * (max - min) / (inputMax - inputMin);
 		}
 
-        public class Line {
+		#region SmoothDamp
+
+		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed )
+		{
+			float deltaTime = Time.Delta;
+			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+		}
+
+		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime )
+		{
+			float deltaTime = Time.Delta;
+			float maxSpeed = Infinity;
+			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+		}
+
+		// Gradually changes a value towards a desired goal over time.
+		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime, float deltaTime, float maxSpeed = Infinity )
+		{
+			// Based on Game Programming Gems 4 Chapter 1.10
+			smoothTime = MathF.Max( 0.0001F, smoothTime );
+			float omega = 2F / smoothTime;
+
+			float x = omega * deltaTime;
+			float exp = 1F / (1F + x + 0.48F * x * x + 0.235F * x * x * x);
+			float change = current - target;
+			float originalTo = target;
+
+			// Clamp maximum speed
+			float maxChange = maxSpeed * smoothTime;
+			change = Math.Clamp( change, -maxChange, maxChange );
+			target = current - change;
+
+			float temp = (currentVelocity + omega * change) * deltaTime;
+			currentVelocity = (currentVelocity - omega * temp) * exp;
+			float output = target + (change + temp) * exp;
+
+			// Prevent overshooting
+			if ( originalTo - current > 0.0F == output > originalTo )
+			{
+				output = originalTo;
+				currentVelocity = (output - originalTo) / deltaTime;
+			}
+
+			return output;
+		}
+
+		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed )
+		{
+			float deltaTime = Time.Delta;
+			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+		}
+
+		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime )
+		{
+			float deltaTime = Time.Delta;
+			float maxSpeed = Infinity;
+			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+		}
+
+		// Gradually changes an angle given in degrees towards a desired goal angle over time.
+		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float deltaTime, float maxSpeed = Infinity )
+		{
+			target = current + DeltaAngle( current, target );
+			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+		}
+
+		// Calculates the shortest difference between two given angles.
+		public static float DeltaAngle( float current, float target )
+		{
+			float delta = Math2d.Repeat( (target - current), 360.0F );
+			if ( delta > 180.0F )
+				delta -= 360.0F;
+			return delta;
+		}
+
+		// Loops the value t, so that it is never larger than length and never smaller than 0.
+		public static float Repeat( float t, float length )
+		{
+			return Math.Clamp( t - (float)Math.Floor( t / length ) * length, 0.0f, length );
+		}
+
+		#endregion
+
+		public class Line {
             public Vector2 pointA;
             public Vector2 pointB;
 
