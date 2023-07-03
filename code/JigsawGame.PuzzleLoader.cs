@@ -13,14 +13,14 @@ public partial class JigsawGame : GameManager
 	// All PuzzlePiece entities (NETWORKED)
 	[Net] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
 
-	public PuzzlePiece GetPieceEntity(int x, int y)
+	public PuzzlePiece GetPieceEntity( int x, int y )
 	{
 		int i = Math2d.ArrayIndex( x, y, PieceCountX, PieceCountY );
 		return PieceEntities[i];
 	}
 
 	// All piece models (CLIENT)
-	public Model[] PieceModels { get; set; } = null;		
+	public Model[] PieceModels { get; set; } = null;
 
 	// // //
 
@@ -92,7 +92,7 @@ public partial class JigsawGame : GameManager
 
 	}
 
-	public void SpawnPuzzlePiecesInGrid(float spacing = 8f)
+	public void SpawnPuzzlePiecesInGrid( float spacing = 8f )
 	{
 		// Only do this on server.
 		if ( Game.IsClient ) return;
@@ -122,9 +122,9 @@ public partial class JigsawGame : GameManager
 	/// </summary>
 	/// <param name="spawners"></param>
 	/// <returns></returns>
-	private Vector3 GetSpawnPosition(ref List<PieceSpawner> spawners )
+	private Vector3 GetSpawnPosition( ref List<PieceSpawner> spawners )
 	{
-		if(spawners.Count == 0)
+		if ( spawners.Count == 0 )
 		{
 			return Vector3.Zero;
 		}
@@ -147,8 +147,7 @@ public partial class JigsawGame : GameManager
 
 	public void LoadClientPieces()
 	{
-
-		Log.Warning( "loading pieces on client..." );
+		Log.Warning( "[" + Game.LocalClient + "] loading pieces on client..." );
 
 		// Load materials.
 		//await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
@@ -158,7 +157,7 @@ public partial class JigsawGame : GameManager
 		//await Task.RunInThreadAsync( () => GeneratePuzzle() );
 		GeneratePuzzle();
 
-		for (int i = 0; i < Current.PieceEntities.Count; i++ )
+		for ( int i = 0; i < Current.PieceEntities.Count; i++ )
 		{
 			Current.PieceEntities[i].GenerateClient();
 		}
