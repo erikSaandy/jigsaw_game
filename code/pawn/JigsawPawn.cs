@@ -63,11 +63,18 @@ public partial class JigsawPawn : AnimatedEntity
 
 	public override Ray AimRay => new Ray( EyePosition, EyeRotation.Forward );
 
+	public JigsawPawn() : base()
+	{
+
+	}
+
 	/// <summary>
 	/// Called when the entity is first created 
 	/// </summary>
 	public override void Spawn()
 	{
+		base.Spawn();
+
 		SetModel( "models/citizen/citizen.vmdl" );
 		Tags.Add( "player" );
 
