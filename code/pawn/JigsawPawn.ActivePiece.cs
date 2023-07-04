@@ -1,11 +1,5 @@
-﻿using Saandy;
-using Sandbox;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using Sandbox;
 using System.Linq;
-using System.Numerics;
 
 namespace Jigsaw;
 
@@ -18,7 +12,10 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private float SmoothTime = 1f;
 	private Vector3 dampVelocity = Vector3.Zero;
-	private Vector3 ActivePiecePositionOld = Vector3.Zero;
+	private Vector3 PositionOld = Vector3.Zero;
+
+	public Vector3 HeldOffset = Vector3.Zero;
+	private readonly int MaxHeldDistance = 128;
 
 	public void SimulateActivePiece( IClient cl )
 	{
@@ -32,9 +29,12 @@ public partial class JigsawPawn : AnimatedEntity
 		#region Active Piece Position
 
 		Vector3 pWanted = GetWantedPosition();
+		DebugOverlay.Sphere( pWanted, 5, Color.Green );
 
-		ActivePiecePositionOld = ActivePiece.Position;
-		ActivePiece.Position = Vector3.SmoothDamp( ActivePiece.Position, pWanted, ref dampVelocity, SmoothTime, Time.Delta * 200 );
+		PositionOld = ActivePiece.Position;
+		Vector3 pNew = Vector3.SmoothDamp( ActivePiece.Position, pWanted + HeldOffset, ref dampVelocity, SmoothTime, Time.Delta * 100 );
+		Vector3 vel = pNew - PositionOld;
+		ActivePiece.PhysicsBody.Velocity = vel * 10;
 
 		//ActivePiece.Position = Math2d.Lerp( ActivePiece.Position, pWanted, Time.Delta * 10 );
 		//ActivePiece.Position = EyePosition + (EyeRotation.Forward * 64); // + (EyeRotation.Right * 64);
@@ -64,77 +64,61 @@ public partial class JigsawPawn : AnimatedEntity
 			Angles a = ActivePiece.Rotation.Angles();
 			//ActivePiece.LocalRotation = new Angles( a.pitch + deltaRot.x, a.yaw + deltaRot.y, a.roll ).ToRotation();
 
-			ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( Vector3.Up, (a.pitch + deltaRot.x).DegreeToRadian() );
+			//ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( Vector3.Up, (a.pitch + deltaRot.x).DegreeToRadian() );
 			//ActivePiece.Rotation *= (Rotation)Quaternion.CreateFromAxisAngle( ActivePiece.Rotation.Right, (a.yaw + deltaRot.y).DegreeToRadian() );
 
 			//ActivePiece.Rotation = new Rotation( ActivePiece.Rotation.y + deltaRot.y, ActivePiece.Rotation.x + deltaRot.x, ActivePiece.Rotation.z, ActivePiece.Rotation.w );
 		}
 
 		if(ActivePiece.TimeSincePickedUp > 0.5f ) {
-			ActivePiece.CheckForConnections(); 
+			ActivePiece.CheckForConnections();
 		}
 
 	}
 
 	private Vector3 GetWantedPosition()
 	{
+
 		float radius = JigsawGame.PieceScale / 2;
 
-		string[] tags = new string[3] { "solid,", "puzzlepiece", "player" };
-		PuzzlePiece.GetBoundingBox( ActivePiece.X, ActivePiece.Y, out Vector3 mins, out Vector3 maxs );
-		BBox bounds = new BBox( mins, maxs );
+		PuzzlePiece[] group = ActivePiece.GetGroupPieces().Where( x => x.IsValid ).ToArray();
 
-		TraceResult trace = Trace.Box( bounds, EyePosition, EyePosition + EyeRotation.Forward * 128 )
-			.Ignore( ActivePiece, true )
-			.Run();
+		float maxDst = MaxHeldDistance;
+		bool anyHit = false;
 
-		TraceResult nudge = Trace.Box( bounds, ActivePiece.Position, trace.EndPosition )
-			.Ignore( ActivePiece, true )
-			.Run();
+		// percent of max distance
+		float pOfMaxDst = (ActivePiece.Position - EyePosition).Length / MaxHeldDistance;
 
-		//Log.Error( trace.Entity?.Name );
-		//Log.Error( nudge.Entity?.Name );
-
-		DebugOverlay.Box( trace.EndPosition, bounds.Mins, bounds.Maxs, Color.Green );
-
-		if ( !nudge.Hit )
+		foreach ( PuzzlePiece p in group )
 		{
-			return nudge.EndPosition;
+			Vector3 start = p.Transform.Position - (EyeRotation.Forward * (MaxHeldDistance * pOfMaxDst));
+			TraceResult trace = Trace.Body( p.PhysicsBody, new Transform( start, p.Rotation ), start + (EyeRotation.Forward * MaxHeldDistance) )
+				.Ignore( ActivePiece, true )
+				.Run();
+
+			//DebugOverlay.TraceResult( trace );
+			//DebugOverlay.Sphere( start, 4f, Color.Green, 10 );
+			//DebugOverlay.Line( start, start + (EyeRotation.Forward * MaxHeldDistance), Color.Green, 10 );
+
+			if ( trace.Hit )
+			{
+				if ( trace.Distance < maxDst || !anyHit )
+				{
+					maxDst = trace.Distance;
+					anyHit = true;
+				}
+			}
 		}
 
-		DebugOverlay.Box( nudge.EndPosition, bounds.Mins, bounds.Maxs, Color.Blue );
+		TraceResult trace2 = Trace.Body( ActivePiece.PhysicsBody, new Transform( EyePosition, ActivePiece.Rotation ), EyePosition + (EyeRotation.Forward * maxDst) )
+			.Ignore( ActivePiece, true )
+			.Run();
 
-		return trace.EndPosition;
+		return trace2.EndPosition;
 	}
 
 	public void BuildActivePieceInput()
 	{
-
-		if ( Input.StopProcessing )
-			return;
-
-		// Rotate active piece
-		if ( !Input.Down( "attack2" ) )
-		{
-			InputDirection = Input.AnalogMove;
-		}
-		else if( Input.Pressed("attack2") )
-		{
-			InputDirection = Vector2.Zero;
-		}
-
-		var look = Input.AnalogLook;
-
-		if ( ViewAngles.pitch > 90f || ViewAngles.pitch < -90f )
-		{
-			look = look.WithYaw( look.yaw * -1f );
-		}
-
-		var viewAngles = ViewAngles;
-		viewAngles += look;
-		viewAngles.pitch = viewAngles.pitch.Clamp( -89f, 89f );
-		viewAngles.roll = 0f;
-		ViewAngles = viewAngles.Normal;
 
 	}
 
@@ -150,7 +134,7 @@ public partial class JigsawPawn : AnimatedEntity
 		if ( Input.Pressed( "attack1" ))
 		{
 
-			TraceResult tr = Trace.Ray(EyePosition, EyePosition + (EyeRotation.Forward * rayMag) )
+			TraceResult tr = Trace.Ray(EyePosition, EyePosition + (EyeRotation.Forward * MaxHeldDistance) )
 				.UseHitboxes()
 				.WithTag("puzzlepiece")
 				.Ignore(this)
@@ -158,17 +142,20 @@ public partial class JigsawPawn : AnimatedEntity
 
 			if (tr.Hit)
 			{
-				SetActivePiece( (tr.Entity as PuzzlePiece).GetRoot() );
+				PuzzlePiece root = (tr.Entity as PuzzlePiece).GetRoot();
+				HeldOffset = root.Position - tr.HitPosition;									
+				SetActivePiece( root );
 			}
 		}
+
+		// Throw piece
 		else if(Input.Released("attack1"))
 		{
 			if ( ActivePiece != null )
 			{
-				DebugOverlay.Line( ActivePiece.Position, ActivePiece.Position + ActivePiece.Position - ActivePiecePositionOld, Color.Red, 10 );
+				//DebugOverlay.Line( ActivePiece.Position, ActivePiece.Position + ActivePiece.Position - PositionOld, Color.Red, 10 );
 
-
-				ActivePiece.Velocity =( ActivePiece.Position - ActivePiecePositionOld ) * 20;
+				ActivePiece.Velocity =((ActivePiece.Position) - PositionOld ) * 20;
 				ClearActivePiece();
 				return;
 			}
@@ -184,33 +171,29 @@ public partial class JigsawPawn : AnimatedEntity
 		{
 			piece.Owner = this;
 			ActivePiece = piece;
-
-			//piece.PhysicsEnabled = false;
-			//piece.UsePhysicsCollision = false;
-			//piece.EnableAllCollisions = false;
-			//piece.EnableTraceAndQueries = true;
-
 			piece.HeldBy = this;
+
+			piece.PhysicsEnabled = true;
+			piece.UsePhysicsCollision = true;
+			piece.EnableAllCollisions = true;
+
 			piece.TimeSincePickedUp = 0;
 
-			if ( Game.IsServer )
-			{
-				Angles a = piece.LocalRotation.Angles();
-				piece.LocalRotation = new Angles(
-					a.pitch - (a.pitch % ActivePieceRotationStep),
-					a.yaw - (a.yaw % ActivePieceRotationStep),
-					a.roll - (a.roll % ActivePieceRotationStep)
-					).ToRotation();
+			Angles a = piece.LocalRotation.Angles();
+			piece.LocalRotation = new Angles(
+				a.pitch - (a.pitch % ActivePieceRotationStep),
+				a.yaw - (a.yaw % ActivePieceRotationStep),
+				a.roll - (a.roll % ActivePieceRotationStep)
+				).ToRotation();
 
-				EnableGroupPhysics( piece, false );
+			EnableGroupGravity( piece, false );
 
-				ActivePiecePositionOld = ActivePiece.Position;
-			}
+			PositionOld = ActivePiece.Position;
 		}
 
 	}
 
-	private void EnableGroupPhysics(PuzzlePiece root, bool enable = true)
+	private void EnableGroupGravity(PuzzlePiece root, bool enable = true)
 	{
 		PuzzlePiece[] group = root.GetGroupPieces().Where( x => x.IsValid ).ToArray();
 		foreach ( PuzzlePiece e in group )
@@ -227,7 +210,7 @@ public partial class JigsawPawn : AnimatedEntity
 	{
 		if ( Game.IsServer )
 		{
-			EnableGroupPhysics( ActivePiece, true );
+			EnableGroupGravity( ActivePiece, true );
 		}
 
 		ActivePiece.UsePhysicsCollision = true;

@@ -125,14 +125,7 @@ public partial class JigsawPawn : AnimatedEntity
 		}
 
 		// Rotate active piece
-		if ( !Input.Down( "attack2" ) )
-		{
-			InputDirection = Input.AnalogMove;
-		}
-		else if( Input.Pressed("attack2") )
-		{
-			InputDirection = Vector2.Zero;
-		}
+		InputDirection = Input.AnalogMove;
 
 		BuildActivePieceInput();
 

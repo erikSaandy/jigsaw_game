@@ -8,6 +8,8 @@ namespace Jigsaw;
 
 public partial class PuzzlePiece : ModelEntity
 {
+	private readonly int ConnectionDistance = 4;
+
 	[Net] private PuzzlePiece rootPiece { get; set; } = null;
 	public PuzzlePiece RootPiece => GetRoot();
 	public PuzzlePiece GetRoot()
@@ -38,6 +40,10 @@ public partial class PuzzlePiece : ModelEntity
 		}
 	}
 
+	/// <summary>
+	/// Returns all pieces in the same connected group as this piece.
+	/// </summary>
+	/// <returns></returns>
 	public IEnumerable<PuzzlePiece> GetGroupPieces()
 	{
 		return GetRoot().Children.Append( GetRoot() ).OfType<PuzzlePiece>();
@@ -45,8 +51,6 @@ public partial class PuzzlePiece : ModelEntity
 
 	[Net]
 	public TimeSince TimeSincePickedUp { get; set; } = 0;
-
-	private readonly int ConnectionDistance = 6;
 
 	[Net] public bool ConnectedLeft { get; set; } = false;
 	[Net] public bool ConnectedRight { get; set; } = false;
