@@ -83,7 +83,7 @@ public partial class PuzzlePiece : ModelEntity
 
 		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
-		GeneratePipCollision();
+		//GeneratePipCollision();
 
 		PhysicsEnabled = true;
 		UsePhysicsCollision = true;
@@ -108,13 +108,13 @@ public partial class PuzzlePiece : ModelEntity
 		mins = new Vector3(
 			-(JigsawGame.PieceScale / 2) + ((X == 0) ? 0 : wMin),
 			-(JigsawGame.PieceScale / 2) + ((Y == 0) ? 0 : wMin),
-			-(JigsawGame.PieceScale * JigsawGame.PieceThickness) / 2
+			-(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2)
 		);
 
 		maxs = new Vector3(
 			(JigsawGame.PieceScale/2) + ((X == JigsawGame.Current.PieceCountX - 1) ? 0 : wMax),
 			(JigsawGame.PieceScale/2) + ((Y == JigsawGame.Current.PieceCountY - 1) ? 0 : wMax),
-			(JigsawGame.PieceScale * JigsawGame.PieceThickness) / 2
+			(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2)
 		);
 
 	}

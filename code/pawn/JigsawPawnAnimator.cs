@@ -13,7 +13,7 @@ public class JigsawPawnAnimator : EntityComponent<JigsawPawn>, ISingletonCompone
 		helper.HoldType = CitizenAnimationHelper.HoldTypes.None;
 		helper.IsGrounded = Entity.GroundEntity.IsValid();
 
-		if ( Entity.Controller.HasEvent( "jump" ) )
+		if ( Entity.MovementController.HasEvent( "jump" ) )
 		{
 			helper.TriggerJump();
 		}
