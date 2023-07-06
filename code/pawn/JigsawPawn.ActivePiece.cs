@@ -54,11 +54,12 @@ public partial class JigsawPawn : AnimatedEntity
 		Vector3 start = EyePosition;
 
 		// Trace from active piece out in the eye direction until we reach MaxHeldDistance from the player eye.
-		TraceResult trace = Trace.Body(ActivePiece.PhysicsBody, 
-			new Transform(start, ActivePiece.Rotation), // START
+		TraceResult trace = Trace.Body( ActivePiece.PhysicsBody,
+			new Transform( start, ActivePiece.Rotation ), // START
 			EyePosition + (EyeRotation.Forward * MaxHeldDistance) ) // END
 				.WithAnyTags( CollisionTags )
 				.Ignore( ActivePiece, true )
+				.Ignore( this )
 				.Run();
 
 		DebugOverlay.Sphere( trace.EndPosition, 5, Color.Green );
@@ -203,11 +204,11 @@ public partial class JigsawPawn : AnimatedEntity
 		}
 
 		// ROTATE PIECE
-		if(Input.Down("use"))
-		{
-			Angles a = new Angles( 0, -Input.MouseDelta.x * Time.Delta * 4, 0 );
-			HeldAngleOffset += a;
-		}
+		//if(Input.Down("use"))
+		//{
+		//	Angles a = new Angles( 0, -Input.MouseDelta.x * Time.Delta * 4, 0 );
+		//	HeldAngleOffset += a;
+		//}
 
 
 	}

@@ -12,5 +12,6 @@ public partial class JigsawPawn
 	{
 		Clothing ??= new();
 		Clothing.LoadFromClient( cl );
+		Clothing.DressEntity( this, true, true );
 	}
 }

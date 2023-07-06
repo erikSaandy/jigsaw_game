@@ -7,7 +7,6 @@ public class CitizenAnimationComponent : AnimationComponent
 	Entity lastWeapon;
 	public override void Simulate( IClient cl )
 	{
-		Log.Error( "Simulate Animator" );
 
 		// where should we be rotated to
 		var turnSpeed = 0.02f;

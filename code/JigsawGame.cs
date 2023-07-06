@@ -75,8 +75,6 @@ public partial class JigsawGame : GameManager
 		client.Pawn = pawn;
 		pawn.UpdateClothes( client );
 
-		//pawn.DressFromClient( client );
-
 		// Get all of the spawnpoints
 		var spawnpoints = Entity.All.OfType<SpawnPoint>();
 		// chose a random one

@@ -7,6 +7,7 @@ namespace Jigsaw;
 
 public partial class JigsawPawn : AnimatedEntity
 {
+
 	/// <summary>
 	/// Called when the entity is first created 
 	/// </summary>
@@ -32,6 +33,7 @@ public partial class JigsawPawn : AnimatedEntity
 
 		CreateHull();
 		Tags.Add( "player" );
+
 		EnableAllCollisions = true;
 		EnableDrawing = true;
 		EnableHideInFirstPerson = true;
@@ -70,7 +72,8 @@ public partial class JigsawPawn : AnimatedEntity
 		{
 			var tx = randomSpawnPoint.Transform;
 			tx.Position = tx.Position + Vector3.Up * 50.0f; // raise it up
-			Transform = tx;
+			//Transform = tx;
+			Position = tx.Position;
 		}
 	}
 	// An example BuildInput method within a player's Pawn class.
@@ -169,24 +172,27 @@ public partial class JigsawPawn : AnimatedEntity
 	public override void OnKilled()
 	{
 		if ( Game.IsClient ) return;
+
 		Event.Run( "Player.PreOnKilled", this );
 		LifeState = LifeState.Dead;
-		//BecomeRagdoll( LastDamage );
+		BecomeRagdoll( LastDamage );
 
 		//Inventory.ActiveChild = null;
 		//Inventory.ActiveChildInput = null;
-		if ( Game.IsServer )
-		{
-			EnableAllCollisions = false;
-			EnableDrawing = false;
-			//Inventory.DropItem( Inventory.ActiveChild );
-			//foreach ( var item in Inventory.Items.ToList() )
-			//{
-			//	Inventory.DropItem( item );
-			//}
-			//Inventory.Items.Clear();
-			Components.Add( new Jigsaw.NoclipController() );
-		}
+
+		EnableAllCollisions = false;
+		EnableDrawing = false;
+
+		//Inventory.DropItem( Inventory.ActiveChild );
+		//foreach ( var item in Inventory.Items.ToList() )
+		//{
+		//	Inventory.DropItem( item );
+		//}
+		//Inventory.Items.Clear();
+		Components.Add( new NoclipController() );
+
+		DeathTimer = 0;
+
 		Event.Run( "Player.PostOnKilled", this );
 	}
 
@@ -245,10 +251,12 @@ public partial class JigsawPawn : AnimatedEntity
 		MovementController?.Simulate( cl );
 		CameraController?.Simulate( cl );
 		AnimationController?.Simulate( cl );
+		SimulateActivePiece( cl );
 		foreach ( var i in Components.GetAll<SimulatedComponent>() )
 		{
 			if ( i.Enabled ) i.Simulate( cl );
 		}
+
 	}
 
 	/// <summary>
