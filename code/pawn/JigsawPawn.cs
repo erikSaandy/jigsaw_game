@@ -191,8 +191,6 @@ public partial class JigsawPawn : AnimatedEntity
 		//Inventory.Items.Clear();
 		Components.Add( new NoclipController() );
 
-		DeathTimer = 0;
-
 		Event.Run( "Player.PostOnKilled", this );
 	}
 
