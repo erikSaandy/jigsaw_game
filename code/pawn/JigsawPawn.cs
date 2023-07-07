@@ -74,6 +74,8 @@ public partial class JigsawPawn : AnimatedEntity
 			tx.Position = tx.Position + Vector3.Up * 50.0f; // raise it up
 			//Transform = tx;
 			Position = tx.Position;
+			Rotation = tx.Rotation;
+
 		}
 	}
 	// An example BuildInput method within a player's Pawn class.
@@ -138,7 +140,7 @@ public partial class JigsawPawn : AnimatedEntity
 	/// </summary>
 	public virtual void CreateHull()
 	{
-		SetupPhysicsFromAABB( PhysicsMotionType.Keyframed, Hull.Mins, Hull.Maxs );
+		//SetupPhysicsFromAABB( PhysicsMotionType.Keyframed, Hull.Mins, Hull.Maxs );
 
 		//var capsule = new Capsule( new Vector3( 0, 0, 16 ), new Vector3( 0, 0, 72 - 16 ), 32 );
 		//var phys = SetupPhysicsFromCapsule( PhysicsMotionType.Keyframed, capsule );
@@ -249,11 +251,14 @@ public partial class JigsawPawn : AnimatedEntity
 		MovementController?.Simulate( cl );
 		CameraController?.Simulate( cl );
 		AnimationController?.Simulate( cl );
-		SimulateActivePiece( cl );
+
 		foreach ( var i in Components.GetAll<SimulatedComponent>() )
 		{
 			if ( i.Enabled ) i.Simulate( cl );
 		}
+
+		ActivePieceInput();
+		SimulateActivePiece( cl );
 
 	}
 

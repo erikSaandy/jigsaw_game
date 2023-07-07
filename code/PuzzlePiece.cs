@@ -3,12 +3,13 @@ using System;
 using System.Linq;
 using Saandy;
 using System.Collections.Generic;
+using static Sandbox.CitizenAnimationHelper;
 
 namespace Jigsaw;
 
 public partial class PuzzlePiece : ModelEntity
 {
-	private readonly int ConnectionDistance = 4;
+	private readonly int ConnectionDistance = 2;
 
 	[Net] private PuzzlePiece rootPiece { get; set; } = null;
 	public PuzzlePiece RootPiece => GetRoot();
@@ -17,6 +18,9 @@ public partial class PuzzlePiece : ModelEntity
 		if ( rootPiece == null ) { rootPiece = this; }
 		return rootPiece;
 	}
+
+	[Net] public bool freeFall { get; set; } = false;
+	public bool FreeFall { get { return GetRoot().freeFall; } private set { GetRoot().freeFall = value; } }
 
 	[Net]
 	public int Index { get; private set; } = 0;
@@ -57,14 +61,17 @@ public partial class PuzzlePiece : ModelEntity
 	[Net] public bool ConnectedTop { get; set; } = false;
 	[Net] public bool ConnectedBottom { get; set; } = false;
 
-	public static bool Debug { get; set; } = false;
-
 	/// <summary>
 	/// Called when the entity is first created 
 	/// </summary>
-	public override void Spawn()
+	public void Respawn()
 	{
 		base.Spawn();
+		ChatBox.SayInformation( "I found this in the abyss...\rI'll leave it in the center of the map! 😮‍💨" );
+		Position = (Vector3.Up * 64);
+		Random r = new Random();
+		Rotation = new Rotation( 0, 0, 180, r.Next( 0, 360 ) );
+		Velocity = Vector3.Zero;
 	}
 
 	public PuzzlePiece() : base() {  }
@@ -116,7 +123,6 @@ public partial class PuzzlePiece : ModelEntity
 			(JigsawGame.PieceScale/2) + ((Y == JigsawGame.Current.PieceCountY - 1) ? 0 : wMax),
 			(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2)
 		);
-
 	}
 
 	private void GeneratePipCollision()
@@ -133,7 +139,7 @@ public partial class PuzzlePiece : ModelEntity
 	[GameEvent.Tick]
 	void Tick()
 	{
-		if ( Game.IsClient && Debug )
+		if ( Game.IsClient && JigsawGame.Current.Debug )
 		{
 			DebugOverlay.Text( "[" + X + ", " + Y + "]", Position );
 
@@ -147,27 +153,57 @@ public partial class PuzzlePiece : ModelEntity
 			if ( ConnectedLeft ) { DebugOverlay.Sphere( Position + Transform.Rotation.Left * 4, 2, Color.Green, 0.05f ); }
 			if ( ConnectedRight ) { DebugOverlay.Sphere( Position + Transform.Rotation.Right * 4, 2, Color.Blue, 0.05f ); }
 			if ( ConnectedBottom ) { DebugOverlay.Sphere( Position + Transform.Rotation.Backward * 4, 2, Color.Yellow, 0.05f ); }
-
 		}
+
+		if(Game.IsServer)
+		{
+			UpdateFreeFall();
+		}
+
 	}
 
-	public void CheckForConnections()
+	public TimeSince FreeFallTime = 0;
+	private void UpdateFreeFall()
+	{
+		if ( Game.IsServer )
+		{
+			if ( GetRoot() == this ) // Do this only for root pieces.
+			{
+				if( GetRoot().Velocity.z < -500 ) {
+					FreeFall = true;
+					if(FreeFallTime >= 10) // Fell for 10 seconds.
+					{
+						GetRoot().Respawn();
+					}
+				}
+				else {
+					FreeFallTime = 0;
+					FreeFall = false;
+				}
+			}
+		}
+
+	}
+
+	public bool TryConnecting()
 	{
 		// Get the root of active piece.
-		if(GetRoot() != this ) { GetRoot().CheckForConnections(); return; }
+		if(GetRoot() != this ) { return GetRoot().TryConnecting(); }
 
 		// This is root
 
 		PuzzlePiece neighbor = null;
 
 		// Find close neighbor with active piece root.
-		if( FindCloseNeighbor(out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return; }
+		if( FindCloseNeighbor(out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return true; }
 
 		// Find close neighbor with pieces connected to active piece root.
 		foreach(PuzzlePiece c in Children )
 		{
-			if ( c.FindCloseNeighbor( out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return; }
+			if ( c.FindCloseNeighbor( out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return true; }
 		}
+
+		return false;
 
 	}
 
@@ -183,7 +219,7 @@ public partial class PuzzlePiece : ModelEntity
 			
 		//DebugOverlay.Line( Position, Position + (Transform.Rotation.Backward * scale), Color.Green );
 		if ( GetNeighbor( -1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.White ); }
+		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.White ); }
 		
 		if ( !ConnectedBottom && neighbor != null && dot >= 0.95f )
 		{
@@ -194,7 +230,7 @@ public partial class PuzzlePiece : ModelEntity
 		}
 
 		if ( GetNeighbor( 1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.White ); }
+		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.White ); }
 		
 		if ( !ConnectedTop && neighbor != null && dot > 0.95f )
 		{
@@ -206,7 +242,7 @@ public partial class PuzzlePiece : ModelEntity
 
 
 		if ( GetNeighbor( 0, 1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.White ); }
+		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.White ); }
 
 		if ( !ConnectedLeft && neighbor != null && dot > 0.95f )
 		{
@@ -218,7 +254,7 @@ public partial class PuzzlePiece : ModelEntity
 
 
 		if ( GetNeighbor( 0, -1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
-		if ( neighbor != null && Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.White ); }
+		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.White ); }
 
 		if ( !ConnectedRight && neighbor != null && dot > 0.95f )
 		{
@@ -265,7 +301,7 @@ public partial class PuzzlePiece : ModelEntity
 
 	private void ConnectRoots(PuzzlePiece piece, PuzzlePiece other)
 	{
-		if ( Game.IsClient ) return;
+		//if ( Game.IsClient ) return;
 
 		// connect all pieces.
 		PuzzlePiece thisRoot = piece.GetRoot();
@@ -274,7 +310,7 @@ public partial class PuzzlePiece : ModelEntity
 		HeldBy.ActivePiece = null;
 		HeldBy = null;
 
-		#region Piece Checks
+		#region Piece Side Checks
 
 		IEnumerable<Entity> pNew = thisRoot.Children.Append( thisRoot );
 		IEnumerable<Entity> pOther = otherRoot.Children.Append( otherRoot );
@@ -292,14 +328,35 @@ public partial class PuzzlePiece : ModelEntity
 		#endregion
 
 		// COLLAPSE GROUP and PARENT
-		for ( int i = thisRoot.Children.Count() - 1; i >= -1; i-- )
+
+		// This code seems redundant, but doing it any other way causes weird behaviour. I'm just glad it works...
+		PuzzlePiece[] group = thisRoot.GetGroupPieces().Where( x => x != thisRoot ).ToArray();
+		thisRoot.Parent = otherRoot;
+		thisRoot.rootPiece = otherRoot;
+		thisRoot.Rotation = Rotation.Identity;
+		thisRoot.LocalRotation = Rotation.Identity;
+		thisRoot.LocalPosition = new Vector3( (thisRoot.X - otherRoot.X) * JigsawGame.PieceScale, (thisRoot.Y - otherRoot.Y) * JigsawGame.PieceScale );
+
+		foreach (PuzzlePiece p in group)
 		{
-			PuzzlePiece c = i == -1 ? thisRoot : (PuzzlePiece)thisRoot.Children[i];
-			c.Parent = otherRoot;
-			c.LocalRotation = new Angles( 0, 0, 0 ).ToRotation();
-			c.LocalPosition = new Vector3( (c.X - otherRoot.X) * JigsawGame.PieceScale, (c.Y - otherRoot.Y) * JigsawGame.PieceScale );
-			c.rootPiece = otherRoot;
+			// Set null, because otherwise it won't change the hierarchy
+			// (parent is already otherRoot, even though parent is another piece that is parented to otherRoot)
+			p.Parent = null; 
+			
+			p.Parent = otherRoot;
+			p.rootPiece = otherRoot;
+			p.Rotation = Rotation.Identity;
+			p.LocalRotation = Rotation.Identity;
+			p.LocalPosition = new Vector3( (p.X - otherRoot.X) * JigsawGame.PieceScale, (p.Y - otherRoot.Y) * JigsawGame.PieceScale );
 		}
+
+		// Transfer Collision boxes
+		IEnumerable<PhysicsShape> shapes = thisRoot.PhysicsBody.Shapes;
+		foreach( PhysicsShape s in shapes)
+		{
+			otherRoot.PhysicsBody.AddCloneShape( s );
+		}
+		thisRoot.PhysicsClear();
 
 		// Check completion state of the puzzle.
 		JigsawManager.CheckPuzzleCompletionRelative( otherRoot );
@@ -343,6 +400,24 @@ public partial class PuzzlePiece : ModelEntity
 					break;
 			}
 		}
+	}
+
+	public void EnableGroupPhysics( bool enable = true )
+	{
+		if(GetRoot() != this) { GetRoot().EnableGroupPhysics( enable ); }
+
+		PhysicsBody[] bodies = PhysicsGroup.Bodies.ToArray();
+		foreach ( PhysicsBody b in bodies )
+		{
+			b.GravityEnabled = enable;
+		}
+
+		//e.PhysicsEnabled = enable;
+		UsePhysicsCollision = enable;
+		EnableAllCollisions = enable;
+		EnableSolidCollisions = enable;
+		EnableTraceAndQueries = true;
+
 	}
 
 	public bool OnUse( Entity user )

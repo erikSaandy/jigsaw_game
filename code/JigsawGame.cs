@@ -22,6 +22,7 @@ namespace Jigsaw;
 /// </summary>
 public partial class JigsawGame : GameManager
 {
+	[Net] public bool Debug { get; set; } = false;
 
 	public static new JigsawGame Current { get; protected set; }
 

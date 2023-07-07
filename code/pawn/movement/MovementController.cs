@@ -115,6 +115,7 @@ public partial class MovementController : MovementComponent
 		Tags?.Clear();
 
 		Entity.EyeLocalPosition = Vector3.Up * EyeHeight;
+
 		Entity.EyeRotation = Entity.ViewAngles.ToRotation();
 
 

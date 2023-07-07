@@ -2,7 +2,10 @@
 
 Layer0
 {
-	shader "shaders/complex.shader_c"
+	shader "shaders/complex.shader"
+
+	//---- Rendering ----
+	F_PARALLAX_OCCLUSION 1
 
 	//---- Ambient Occlusion ----
 	g_flAmbientOcclusionDirectDiffuse "0.000"
@@ -24,11 +27,18 @@ Layer0
 	g_flMetalness "0.000"
 
 	//---- Normal ----
-	TextureNormal "materials/default/default_normal.tga"
+	TextureNormal "materials/jigsaw_image/Paper005_2K_NormalGL.png"
+
+	//---- Parallax ----
+	g_flHeightMapScale "0.010"
+	g_nLODThreshold "4"
+	g_nMaxSamples "32"
+	g_nMinSamples "8"
+	TextureHeight "[1.000000 1.000000 1.000000 0.000000]"
 
 	//---- Roughness ----
 	g_flRoughnessScaleFactor "2.000"
-	TextureRoughness "[0.893000 0.893000 0.893000 0.000000]"
+	TextureRoughness "materials/jigsaw_image/Paper005_2K_Displacement.png"
 
 	//---- Texture Coordinates ----
 	g_nScaleTexCoordUByModelScaleAxis "0"

@@ -28,6 +28,7 @@ public partial class JigsawPawn
 			basePlayer.TakeDamage( new DamageInfo { Damage = basePlayer.Health * 99 } );
 		}
 	}
+
 	[ConCmd.Admin( "respawn" )]
 	static void DoPlayerRespawn()
 	{
@@ -36,4 +37,17 @@ public partial class JigsawPawn
 			basePlayer.Respawn();
 		}
 	}
+
+	[ConCmd.Admin( "reset" )]
+	static void DoGameReset()
+	{
+		JigsawGame.Current.GameState = new EndingGameState();
+	}
+
+	[ConCmd.Admin( "debug_overlay" )]
+	static void ShowDebugInformation()
+	{
+		JigsawGame.Current.Debug = !JigsawGame.Current.Debug;
+	}
+
 }
