@@ -75,7 +75,7 @@ chatentry {
 		min-height: 32px;
 		border-radius: 100px;
 		position: absolute;
-		left: 7px;
+		left: 11px;
 		top: 12px;
 	}
 
@@ -95,6 +95,7 @@ chatentry {
 		font-size: 14px;
 		color: #b0c3ff;
 		flex-shrink: 0;
+		left: 3px;
 	}
 
 	.message {

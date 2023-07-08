@@ -18,6 +18,8 @@ public partial class JigsawPawn : AnimatedEntity
 	[Net, Predicted] public Angles HeldAngleOffset { get; set; } = Angles.Zero;
 	[Net, Predicted] public Vector3 HeldOffset { get; set; } = Vector3.Zero;
 
+	Particles HoldSplashParticle { get; set; }
+
 	private readonly int MaxHeldDistance = 96;
 
 	public void SimulateActivePiece( IClient cl )
@@ -25,17 +27,20 @@ public partial class JigsawPawn : AnimatedEntity
 
 		if ( ActivePiece == null ) return;
 
-		if ( ActivePiece.TimeSincePickedUp > 0.5f )
+		if ( Game.IsServer )
 		{
-			if ( ActivePiece.TryConnecting() )
+			if ( ActivePiece.TimeSincePickedUp > 0.5f )
 			{
-				return;
+				if ( ActivePiece.TryConnecting() )
+				{
+					return;
+				}
 			}
 		}
 
 		Rotation rot = (EyeRotation.Angles().WithPitch( 0 ) + HeldAngleOffset).ToRotation();
 		Vector3 velocity = GetWantedVelocity();
-
+			
 		PositionOld = ActivePiece.Position;
 		PositionNew = Vector3.SmoothDamp( ActivePiece.Position, ActivePiece.Position + velocity, ref DampVelocity, 0.5f, Time.Delta );
 		velocity = PositionNew - PositionOld;
@@ -44,6 +49,8 @@ public partial class JigsawPawn : AnimatedEntity
 		{
 			ActivePiece.Velocity = velocity * 100;
 			ActivePiece.Rotation = rot;
+
+			//HoldSplashParticle.SetPosition( 0, ActivePiece.Position - HeldOffset );
 		}
 
 	}
@@ -64,7 +71,8 @@ public partial class JigsawPawn : AnimatedEntity
 				.Ignore( this )
 				.Run();
 
-		DebugOverlay.Sphere( trace.EndPosition, 5, Color.Green );
+		if(JigsawGame.Current.Debug)
+			DebugOverlay.Sphere( trace.EndPosition, 5, Color.Green );
 
 		return trace.EndPosition - ActivePiece.Position + HeldOffset + (Vector3.Up * JigsawGame.PieceThickness / 2 * JigsawGame.PieceScale);
 
@@ -164,13 +172,15 @@ public partial class JigsawPawn : AnimatedEntity
 		Angles _new = (ActivePiece.Rotation.Angles() - EyeRotation.Angles()).WithPitch( 0 );
 		HeldAngleOffset = _new;
 
+		HoldSplashParticle = Particles.Create( "particles/hold_splash.vpcf", ActivePiece, "", true );
 	}
 
-	private void ClearActivePiece()
+	public void ClearActivePiece()
 	{
 		if ( Game.IsServer )
 		{
 			ActivePiece.EnableGroupPhysics( true );
+			HoldSplashParticle.Destroy();
 		}
 
 		ActivePiece.HeldBy = null;

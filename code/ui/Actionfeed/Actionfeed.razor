@@ -1,0 +1,72 @@
+﻿﻿@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.UI.Construct;
+@using System;
+@using System.Collections.Generic;
+
+@namespace Jigsaw
+
+@inherits Panel
+
+<style>
+
+	.actionfeed {
+		width: 400px;
+		min-width:300px;
+		height: 100%;
+		border: 1px solid #c3c3c3; 
+		flex-direction: column;
+		flex-flow: column nowrap;
+	}
+		
+	entry {
+		opacity: 1;
+		border-radius: 30px;
+		background-color: rgba( black, 0.7 );
+		width: 300px;
+		height: 50px;
+
+		padding: 15px;
+		backdrop-filter: blur( 5px );
+
+		color: white;
+		font-family: Poppins;
+		font-size: 15px;
+		font-weight: 600;
+		margin-top: 5px;
+		margin-right: 5px;
+		align-self:flex-end;
+		align-content: center;
+		transform: scale( 1 );
+	}
+
+</style>
+
+<root>
+
+	<div class="actionfeed">
+		@foreach(string entry in Entries)
+        {
+			<entry>@entry</entry>
+		}
+    </div>
+
+</root>
+
+@code {
+
+	public IList<string> Entries { get; set; }
+
+	public async void AddActionEntry( string message )
+	{
+		Entries.Add(message);
+
+		StateHasChanged();
+
+        await Task.Delay(5000);
+
+		Entries.Remove(message);
+		StateHasChanged();
+    }
+
+}

@@ -195,16 +195,27 @@ public partial class PuzzlePiece : ModelEntity
 		PuzzlePiece neighbor = null;
 
 		// Find close neighbor with active piece root.
-		if( FindCloseNeighbor(out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return true; }
+		if( FindCloseNeighbor(out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); OnConnectedServer(); return true; }
 
 		// Find close neighbor with pieces connected to active piece root.
 		foreach(PuzzlePiece c in Children )
 		{
-			if ( c.FindCloseNeighbor( out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); return true; }
+			if ( c.FindCloseNeighbor( out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); OnConnectedServer(); return true; }
 		}
 
 		return false;
 
+	}
+
+	private void OnConnectedServer()
+	{
+		if(Game.IsServer) OnConnectedClient(To.Everyone);
+	}
+
+	[ConCmd.Client( "add_entry_client", CanBeCalledFromServer = true )]
+	private static void OnConnectedClient()
+	{
+		Actionfeed.AddEntryClient( Game.LocalClient.Name + " made a connection!" );
 	}
 
 	/// <summary>
@@ -301,13 +312,13 @@ public partial class PuzzlePiece : ModelEntity
 
 	private void ConnectRoots(PuzzlePiece piece, PuzzlePiece other)
 	{
-		//if ( Game.IsClient ) return;
+		if ( Game.IsClient ) return;
 
 		// connect all pieces.
 		PuzzlePiece thisRoot = piece.GetRoot();
 		PuzzlePiece otherRoot = other.GetRoot();
 
-		HeldBy.ActivePiece = null;
+		HeldBy.ClearActivePiece();
 		HeldBy = null;
 
 		#region Piece Side Checks

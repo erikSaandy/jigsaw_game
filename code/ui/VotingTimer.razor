@@ -8,16 +8,10 @@
 
 <style>
 
-	box {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
 	.container {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		align-self: auto;
 
 		border-radius: 40px 
 		
@@ -28,7 +22,7 @@
 		height: 80px;
 
 		margin-top:25px;
-		margin-right:25px;
+		
 		
 		background-color: rgba(black, 0.5);
 		backdrop-filter: blur( 5px );
@@ -65,11 +59,11 @@
 <root>
 	@if (Visible)
 	{
-		<panel class="container">
+		<div class="container">
 			<timer>
 				@Timer
 			</timer>
-		</panel>
+		</div>
 
 	}
 </root>

@@ -108,6 +108,7 @@ namespace Jigsaw
 		[ConCmd.Server]	
 		public static async void SaySomething( string message )
 		{
+
 			string avatar = "";
 			if(MessageIsPuzzleURL( message ) )
 			{
