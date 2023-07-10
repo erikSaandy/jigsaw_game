@@ -980,6 +980,7 @@
 		},
 		{
 			_class = "C_OP_SetCPtoVector"
+			m_nCPInput = 1
 		},
 	]
 	m_Renderers = 

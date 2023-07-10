@@ -24,14 +24,14 @@ public partial class JigsawPawn : AnimatedEntity
 		Components.Add( new MovementController() );
 		Components.Add( new FirstPersonCamera() );
 		//Components.Add( new AmmoStorageComponent() );
-		//Components.Add( new InventoryComponent() );
+		Components.Add( new InventoryComponent() );
 		Components.Add( new CitizenAnimationComponent() );
 		Components.Add( new UseComponent() );
 		//Components.Add( new FallDamageComponent() );
 		Components.Add( new UnstuckComponent() );
 		//Ammo.ClearAmmo();
 
-		CreateHull();
+		//CreateHull();
 		Tags.Add( "player" );
 
 		EnableAllCollisions = true;
@@ -43,9 +43,10 @@ public partial class JigsawPawn : AnimatedEntity
 		Predictable = true;
 		EnableHitboxes = true;
 
-
 		MoveToSpawnpoint();
+		
 		Event.Run( "Player.PostSpawn", this );
+
 	}
 
 	/// <summary>
@@ -85,7 +86,8 @@ public partial class JigsawPawn : AnimatedEntity
 	public MovementComponent MovementController => Components.Get<MovementComponent>();
 	public CameraComponent CameraController => Components.Get<CameraComponent>();
 	public AnimationComponent AnimationController => Components.Get<AnimationComponent>();
-	//public InventoryComponent Inventory => Components.Get<InventoryComponent>();
+
+	public InventoryComponent Inventory => Components.Get<InventoryComponent>();
 	//public AmmoStorageComponent Ammo => Components.Get<AmmoStorageComponent>();
 	public UseComponent UseKey => Components.Get<UseComponent>();
 	public UnstuckComponent UnstuckController => Components.Get<UnstuckComponent>();
@@ -138,20 +140,7 @@ public partial class JigsawPawn : AnimatedEntity
 	/// the player. It's basically a big solid box. It also what hits triggers and stuff.
 	/// The player doesn't use this hull for its movement size.
 	/// </summary>
-	public virtual void CreateHull()
-	{
-		//SetupPhysicsFromAABB( PhysicsMotionType.Keyframed, Hull.Mins, Hull.Maxs );
 
-		//var capsule = new Capsule( new Vector3( 0, 0, 16 ), new Vector3( 0, 0, 72 - 16 ), 32 );
-		//var phys = SetupPhysicsFromCapsule( PhysicsMotionType.Keyframed, capsule );
-
-
-		//	phys.GetBody(0).RemoveShadowController();
-
-		// TODO - investigate this? if we don't set movetype then the lerp is too much. Can we control lerp amount?
-		// if so we should expose that instead, that would be awesome.
-		EnableHitboxes = true;
-	}
 	DamageInfo LastDamage;
 	public override void TakeDamage( DamageInfo info )
 	{
@@ -179,18 +168,14 @@ public partial class JigsawPawn : AnimatedEntity
 		LifeState = LifeState.Dead;
 		BecomeRagdoll( LastDamage );
 
-		//Inventory.ActiveChild = null;
-		//Inventory.ActiveChildInput = null;
+		Inventory.ActiveChild = null;
+		Inventory.ActiveChildInput = null;
 
 		EnableAllCollisions = false;
 		EnableDrawing = false;
 
-		//Inventory.DropItem( Inventory.ActiveChild );
-		//foreach ( var item in Inventory.Items.ToList() )
-		//{
-		//	Inventory.DropItem( item );
-		//}
-		//Inventory.Items.Clear();
+		Inventory.Items.Clear();
+
 		Components.Add( new NoclipController() );
 
 		Event.Run( "Player.PostOnKilled", this );
@@ -213,6 +198,8 @@ public partial class JigsawPawn : AnimatedEntity
 		{
 			if ( i.Enabled ) i.BuildInput();
 		}
+
+		Inventory?.ActiveChild?.BuildInput();
 	}
 
 	/// <summary>
@@ -221,18 +208,6 @@ public partial class JigsawPawn : AnimatedEntity
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
-		//// toggleable third person
-		//if ( Input.Pressed( "View" ) && Game.IsServer )
-		//{
-		//	if ( CameraController is FirstPersonCamera )
-		//	{
-		//		Components.Add( new ThirdPersonCamera() );
-		//	}
-		//	else if ( CameraController is ThirdPersonCamera )
-		//	{
-		//		Components.Add( new FirstPersonCamera() );
-		//	}
-		//}
 
 		//if ( Game.IsClient )
 		//{
@@ -257,10 +232,50 @@ public partial class JigsawPawn : AnimatedEntity
 			if ( i.Enabled ) i.Simulate( cl );
 		}
 
-		ActivePieceInput();
 		SimulateActivePiece( cl );
 
+		if ( Inventory?.ActiveChild != null )
+		{
+			SimulateActiveChild( cl, Inventory?.ActiveChild );
+		}
+
 	}
+
+	public virtual void SimulateActiveChild( IClient cl, Entity child )
+	{
+		if ( Inventory == null ) return;
+
+		if ( Inventory.PreviousActiveChild != child )
+		{
+			OnActiveChildChanged( Inventory.PreviousActiveChild, child );
+			Inventory.PreviousActiveChild = child;
+		}
+
+		if ( !Inventory.PreviousActiveChild.IsValid() )
+			return;
+
+		if ( Inventory.PreviousActiveChild.IsAuthority )
+		{
+			Inventory.PreviousActiveChild.Simulate( cl );
+		}
+	}
+
+	/// <summary>
+	/// Called when the Active child is detected to have changed
+	/// </summary>
+	public virtual void OnActiveChildChanged( Entity previous, Entity next )
+	{
+		if ( previous is Carriable previousC )
+		{
+			previousC?.OnDrop( this );
+		}
+
+		if ( next is Carriable nextC )
+		{
+			nextC?.OnPickup( this );
+		}
+	}
+
 
 	/// <summary>
 	/// Called every frame on the client
@@ -269,7 +284,7 @@ public partial class JigsawPawn : AnimatedEntity
 	{
 		base.FrameSimulate( cl );
 		// these are to be done in order and before the simulated components
-		//UnstuckController?.FrameSimulate( cl );
+		UnstuckController?.FrameSimulate( cl );
 		MovementController?.FrameSimulate( cl );
 		CameraController?.FrameSimulate( cl );
 		AnimationController?.FrameSimulate( cl );

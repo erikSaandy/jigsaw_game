@@ -240,17 +240,12 @@ namespace Saandy {
 
 		#region SmoothDamp
 
-		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed )
-		{
-			float deltaTime = Time.Delta;
-			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
-		}
 
 		public static float SmoothDamp( float current, float target, ref float currentVelocity, float smoothTime )
 		{
 			float deltaTime = Time.Delta;
 			float maxSpeed = Infinity;
-			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+			return SmoothDamp( current, target, ref currentVelocity, smoothTime, deltaTime, maxSpeed );
 		}
 
 		// Gradually changes a value towards a desired goal over time.
@@ -284,24 +279,24 @@ namespace Saandy {
 			return output;
 		}
 
-		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed )
+		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed = Infinity )
 		{
 			float deltaTime = Time.Delta;
-			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, deltaTime, maxSpeed );
 		}
 
 		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime )
 		{
 			float deltaTime = Time.Delta;
 			float maxSpeed = Infinity;
-			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+			return SmoothDampAngle( current, target, ref currentVelocity, smoothTime, deltaTime, maxSpeed );
 		}
 
 		// Gradually changes an angle given in degrees towards a desired goal angle over time.
 		public static float SmoothDampAngle( float current, float target, ref float currentVelocity, float smoothTime, float deltaTime, float maxSpeed = Infinity )
 		{
 			target = current + DeltaAngle( current, target );
-			return SmoothDamp( current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime );
+			return SmoothDamp( current, target, ref currentVelocity, smoothTime, deltaTime, maxSpeed );
 		}
 
 		// Calculates the shortest difference between two given angles.

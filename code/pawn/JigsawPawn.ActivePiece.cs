@@ -1,5 +1,7 @@
-﻿using Sandbox;
+﻿using Saandy;
+using Sandbox;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Jigsaw;
@@ -12,47 +14,220 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private readonly float SmoothTime = 1f;
 	private Vector3 DampVelocity = Vector3.Zero;
-	[Net, Predicted] private Vector3 PositionOld { get; set; } = Vector3.Zero;
-	[Net, Predicted] private Vector3 PositionNew { get; set; } = Vector3.Zero;
+	[Net] private Vector3 PositionOld { get; set; } = Vector3.Zero;
+	[Net] private Vector3 PositionNew { get; set; } = Vector3.Zero;
 	[Net, Predicted] public Vector3 PieceVelocity { get; set; } = Vector3.Zero;
-	[Net, Predicted] public Angles HeldAngleOffset { get; set; } = Angles.Zero;
-	[Net, Predicted] public Vector3 HeldOffset { get; set; } = Vector3.Zero;
+	[Net] public Vector3 HeldOffset { get; set; } = Vector3.Zero;
+
+	private readonly float YawSmoothTime = 0.5f;
+	private float YawDampVelocity = 0;
+	[Net] public Angles WantedAngleOffset { get; set; } = Angles.Zero;
+
+	[Net] public float YawOld { get; set; } = 0;
 
 	Particles HoldSplashParticle { get; set; }
 
-	private readonly int MaxHeldDistance = 96;
+	private readonly int MaxHeldDistance = 128;
 
 	public void SimulateActivePiece( IClient cl )
 	{
 
+		ActivePieceInput();
+
 		if ( ActivePiece == null ) return;
+
+		Angles yawDelta = Angles.Zero;
+
+		if ( Input.Down( "use" ) )
+		{
+			yawDelta = new Angles( 0, -Input.MouseDelta.x * Time.Delta * 4, 0 );
+			WantedAngleOffset += yawDelta;
+		}
 
 		if ( Game.IsServer )
 		{
-			if ( ActivePiece.TimeSincePickedUp > 0.5f )
+			using ( Prediction.Off() )
 			{
-				if ( ActivePiece.TryConnecting() )
+				// pos
+
+				// Get wanted pos instead, based on all pieces...
+				Vector3 velocity = GetWantedVelocity();
+
+				PositionOld = ActivePiece.Position;
+				PositionNew = Vector3.SmoothDamp( ActivePiece.Position, ActivePiece.Position + velocity, ref DampVelocity, 0.5f, Time.Delta * 2);
+				velocity = PositionNew - PositionOld;
+				ActivePiece.Velocity = velocity * 100;
+
+				//rot
+
+				UpdateHeldOffset( YawOld, ActivePiece.Rotation.Yaw() );	
+
+				YawOld = ActivePiece.Rotation.Yaw();
+				float yawWanted = EyeRotation.Yaw() + WantedAngleOffset.yaw;
+				float yaw = Math2d.SmoothDampAngle( YawOld, yawWanted, ref YawDampVelocity, 0.2f, Time.Delta * 2, Math2d.Infinity );
+
+				float m = ActivePiece.PhysicsBody.Mass * Time.Delta;
+				ActivePiece.PhysicsBody.AngularVelocity = new Vector3( 
+					-ActivePiece.Rotation.x * m,
+					-ActivePiece.Rotation.y * m,
+					(yaw - YawOld) );
+
+			}
+
+		}
+
+		HoldSplashParticle.SetPosition( 1, ActivePiece.Position - HeldOffset );	
+
+		if ( ActivePiece.TimeSincePickedUp > 0.5f )
+		{
+			if ( ActivePiece.TryConnecting( out PuzzlePiece neighbor ) )
+			{
+				if ( Game.IsServer )
 				{
-					return;
+					ConnectRoots( ActivePiece, neighbor );
+					OnConnected( Client );
 				}
+
+				return;
+			}
+		}
+	}
+
+	private void UpdateHeldOffset(float withYaw)
+	{
+		Rotation old = ActivePiece.Rotation;
+		Rotation _new = ActivePiece.Rotation.Angles().WithYaw( withYaw ).ToRotation();
+
+		float delta = (_new.Angles() - old.Angles()).yaw;
+		Vector3 v = Math2d.RotateByAngle( HeldOffset, -delta ) * HeldOffset.Length;
+
+		HeldOffset = v;
+		
+	}
+
+	private void UpdateHeldOffset( float yawOld, float yawNew )
+	{
+		float delta = (yawNew - yawOld);
+		HeldOffset = Math2d.RotateByAngle( HeldOffset, -delta ) * HeldOffset.Length;
+	}
+
+	// This looks dumb and probably is dumb, but clients don't reliably call this function.
+	private static void OnConnected(IClient cl)
+	{
+		OnConnectedClient(To.Single( cl ));
+	}
+
+	[ConCmd.Client("on_connected_client", CanBeCalledFromServer = true)]
+	public static void OnConnectedClient()
+	{
+		if(Game.LocalClient == ConsoleSystem.Caller)
+		{
+			Sandbox.Services.Stats.Increment( "piece_connections", 1 );
+		}
+
+		Actionfeed.AddEntry( ConsoleSystem.Caller.Name + " made a connection!" );
+	}
+
+	private void ConnectRoots( PuzzlePiece piece, PuzzlePiece other )
+	{
+		if ( Game.IsClient ) return;
+
+		// connect all pieces.
+		PuzzlePiece thisRoot = piece.GetRoot();
+		PuzzlePiece otherRoot = other.GetRoot();
+
+		ClearActivePiece();
+
+		#region Piece Side Checks
+
+		IEnumerable<Entity> pNew = thisRoot.Children.Append( thisRoot );
+		IEnumerable<Entity> pOther = otherRoot.Children.Append( otherRoot );
+
+		// For each piece being connected
+		foreach ( PuzzlePiece n in pNew )
+		{
+			// Check against all pieces in other root
+			foreach ( PuzzlePiece o in pOther )
+			{
+				TryConnectSides( n, o );
 			}
 		}
 
-		Rotation rot = (EyeRotation.Angles().WithPitch( 0 ) + HeldAngleOffset).ToRotation();
-		Vector3 velocity = GetWantedVelocity();
-			
-		PositionOld = ActivePiece.Position;
-		PositionNew = Vector3.SmoothDamp( ActivePiece.Position, ActivePiece.Position + velocity, ref DampVelocity, 0.5f, Time.Delta );
-		velocity = PositionNew - PositionOld;
+		#endregion
 
-		if ( Game.IsServer )
+		// COLLAPSE GROUP and PARENT
+
+		// This code seems redundant, but doing it any other way causes weird behaviour. I'm just glad it works...
+		PuzzlePiece[] group = thisRoot.GetGroupPieces().Where( x => x != thisRoot ).ToArray();
+		thisRoot.Parent = otherRoot;
+		thisRoot.SetRoot(otherRoot);
+		thisRoot.Rotation = Rotation.Identity;
+		thisRoot.LocalRotation = Rotation.Identity;
+		thisRoot.LocalPosition = new Vector3( (thisRoot.X - otherRoot.X) * JigsawGame.PieceScale, (thisRoot.Y - otherRoot.Y) * JigsawGame.PieceScale );
+
+		foreach ( PuzzlePiece p in group )
 		{
-			ActivePiece.Velocity = velocity * 100;
-			ActivePiece.Rotation = rot;
+			// Set null, because otherwise it won't change the hierarchy
+			// (parent is already otherRoot, even though parent is another piece that is parented to otherRoot)
+			p.Parent = null;
 
-			//HoldSplashParticle.SetPosition( 0, ActivePiece.Position - HeldOffset );
+			p.Parent = otherRoot;
+			p.SetRoot(otherRoot);
+			p.Rotation = Rotation.Identity;
+			p.LocalRotation = Rotation.Identity;
+			p.LocalPosition = new Vector3( (p.X - otherRoot.X) * JigsawGame.PieceScale, (p.Y - otherRoot.Y) * JigsawGame.PieceScale );
 		}
 
+		// Transfer Collision boxes
+		IEnumerable<PhysicsShape> shapes = thisRoot.PhysicsBody.Shapes;
+		foreach ( PhysicsShape s in shapes )
+		{
+			otherRoot.PhysicsBody.AddCloneShape( s );
+		}
+		thisRoot.PhysicsClear();
+
+		// Check completion state of the puzzle.
+		JigsawManager.CheckPuzzleCompletionRelative( otherRoot );
+
+		// // // // //
+
+		// Check if piece has a neighboring side with this piece, and connect them.
+		void TryConnectSides( PuzzlePiece piece, PuzzlePiece other )
+		{
+			if ( piece == other ) { return; }
+
+			Vector2 dir = new Vector2( other.X - piece.X, other.Y - piece.Y );
+			if ( dir.Length > 1 ) { return; } // piece is not a direct neighbor.
+			int deg = dir.DirectionToQuadrant();
+
+			//Log.Error( "-------------" );
+			//Log.Error( "pos: " + new Vector2( piece.X, piece.Y ) + ", other pos: " + new Vector2( other.X, other.Y ) + ", dir: " + dir + ", deg: " + deg );
+
+			switch ( deg )
+			{
+				// up
+				case 0:
+					//Log.Error( "Connect right" );
+					piece.ConnectedRight = true;
+					other.ConnectedLeft = true;
+					break;
+				case 1:
+					//Log.Error( "Connect Top" );
+					piece.ConnectedTop = true;
+					other.ConnectedBottom = true;
+					break;
+				case 2:
+					//Log.Error( "Connect Left" );
+					piece.ConnectedLeft = true;
+					other.ConnectedRight = true;
+					break;
+				case 3:
+					//Log.Error( "Connect Down" );
+					piece.ConnectedBottom = true;
+					other.ConnectedTop = true;
+					break;
+			}
+		}
 	}
 
 	private Vector3 GetWantedVelocity()
@@ -74,7 +249,10 @@ public partial class JigsawPawn : AnimatedEntity
 		if(JigsawGame.Current.Debug)
 			DebugOverlay.Sphere( trace.EndPosition, 5, Color.Green );
 
-		return trace.EndPosition - ActivePiece.Position + HeldOffset + (Vector3.Up * JigsawGame.PieceThickness / 2 * JigsawGame.PieceScale);
+		//Vector3 up = (Vector3.Up * JigsawGame.PieceThickness * JigsawGame.PieceScale / 2);
+		Vector3 r = trace.EndPosition - ActivePiece.Position + HeldOffset;
+
+		return trace.EndPosition - ActivePiece.Position + HeldOffset;
 
 	}
 
@@ -123,7 +301,7 @@ public partial class JigsawPawn : AnimatedEntity
 
 		if ( Input.Pressed( "attack1" ))
 		{
-
+			
 			TraceResult tr = Trace.Ray(EyePosition, EyePosition + (EyeRotation.Forward * MaxHeldDistance) )
 				.UseHitboxes()
 				.WithTag("puzzlepiece")
@@ -155,7 +333,6 @@ public partial class JigsawPawn : AnimatedEntity
 
 	private void SetActivePiece( PuzzlePiece piece, Vector3 hitPosition )
 	{
-		if ( Game.IsClient ) return;
 
 		piece.Owner = this;
 		ActivePiece = piece;
@@ -169,8 +346,10 @@ public partial class JigsawPawn : AnimatedEntity
 
 		HeldOffset = piece.Position - hitPosition;
 
-		Angles _new = (ActivePiece.Rotation.Angles() - EyeRotation.Angles()).WithPitch( 0 );
-		HeldAngleOffset = _new;
+		WantedAngleOffset = (ActivePiece.Rotation.Angles() - EyeRotation.Angles()).WithPitch( 0 ).WithRoll( 0 );
+		YawOld = ActivePiece.Rotation.Yaw();
+
+		if (HoldSplashParticle != null) HoldSplashParticle.Destroy();
 
 		HoldSplashParticle = Particles.Create( "particles/hold_splash.vpcf", ActivePiece, "", true );
 	}
@@ -179,14 +358,17 @@ public partial class JigsawPawn : AnimatedEntity
 	{
 		if ( Game.IsServer )
 		{
-			ActivePiece.EnableGroupPhysics( true );
-			HoldSplashParticle.Destroy();
+			ActivePiece?.EnableGroupPhysics( true );
 		}
 
-		ActivePiece.HeldBy = null;
-		ActivePiece.Owner = null;
+		HoldSplashParticle?.Destroy();
 
-		ActivePiece = null;
+		if ( ActivePiece != null )
+		{
+			ActivePiece.HeldBy = null;
+			ActivePiece.Owner = null;
+			ActivePiece = null;
+		}
 
 	}
 

@@ -35,19 +35,19 @@ public class CitizenAnimationComponent : AnimationComponent
 
 		if ( Entity.MovementController.HasEvent( "jump" ) ) animHelper.TriggerJump();
 
-		//if ( Entity.Inventory?.ActiveChild != lastWeapon ) animHelper.TriggerDeploy();
+		if ( Entity.Inventory?.ActiveChild != lastWeapon ) animHelper.TriggerDeploy();
 
-		//if ( Entity.Inventory?.ActiveChild is Carriable carry )
-		//{
-		//	carry.SimulateAnimator( animHelper );
-		//}
-		//else
-		//{
-		//	animHelper.HoldType = CitizenAnimationHelper.HoldTypes.None;
-		//	animHelper.AimBodyWeight = 0.5f;
+		if ( Entity.Inventory?.ActiveChild is Carriable carry )
+		{
+			carry.SimulateAnimator( animHelper );
+		}
+		else
+		{
+			animHelper.HoldType = CitizenAnimationHelper.HoldTypes.None;
+			animHelper.AimBodyWeight = 0.5f;
 
-		//}
-		//
-		//lastWeapon = Entity.Inventory?.ActiveChild;
+		}
+
+		lastWeapon = Entity.Inventory?.ActiveChild;
 	}
 }

@@ -17,7 +17,7 @@ public partial class Actionfeed : Panel
 	public Actionfeed()
 	{
 		Current = this;
-		Entries = new List<string>();
+		Entries = new List<ActionEntry>();
 	}
 
 	[ConCmd.Server]
@@ -33,27 +33,3 @@ public partial class Actionfeed : Panel
 	}
 
 }
-
-//public partial class ActionEntry : Panel
-//{
-//	public Label Message { get; internal set; }
-//	public Image Icon { get; internal set; }
-
-//	public RealTimeSince TimeSinceBorn = 0;
-
-//	public ActionEntry()
-//	{
-//		Icon = Add.Image();
-//		Message = Add.Label( "Message", "message" );
-//	}
-
-//	public override void Tick()
-//	{
-//		base.Tick();
-
-//		if ( TimeSinceBorn > 15 )
-//		{
-//			Delete();
-//		}
-//	}
-//}

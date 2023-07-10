@@ -9,7 +9,7 @@ namespace Jigsaw;
 /// This is the main base game
 /// </summary>
 [Title( "Game" ), Icon( "sports_esports" )]
-public abstract class JigsawManager : BaseGameManager
+public partial class JigsawManager
 {
 	/// <summary>
 	/// Currently active game entity.
@@ -19,15 +19,6 @@ public abstract class JigsawManager : BaseGameManager
 	public JigsawManager()
 	{
 		Current = this;
-	}
-
-	/// <summary>
-	/// Called when the game is shutting down.
-	/// </summary>
-	public override void Shutdown()
-	{
-		if ( Current == this )
-			Current = null;
 	}
 
 	/// <summary>
@@ -50,27 +41,33 @@ public abstract class JigsawManager : BaseGameManager
 		camera.Enabled = !camera.Enabled;
 	}
 
-	/// <summary>
-	/// Someone is speaking via voice chat. This might be someone in your game,
-	/// or in your party, or in your lobby.
-	/// </summary>
-	public override void OnVoicePlayed( IClient cl )
-	{
-		cl.Voice.WantsStereo = true;
-		VoiceList.Current?.OnVoicePlayed( cl.SteamId, cl.Voice.CurrentLevel );
-	}
-
 	[ConCmd.Server]
-	public static async void CheckPuzzleCompletionRelative( PuzzlePiece piece )
+	public static void CheckPuzzleCompletionRelative( PuzzlePiece piece )
 	{
+
+		if(JigsawGame.Current.GameState.GetType() != typeof (PuzzlingGameState) )
+		{
+			// This should only happen during debugging.
+			Log.Error( "Completed puzzle during wrong gamestate." );
+			return;
+		}
+
 		PuzzlePiece root = piece.GetRoot();
 		int c = root.Children.Count + 1;
 
 		if( c == JigsawGame.Current.PieceCountX * JigsawGame.Current.PieceCountY)
 		{
 			JigsawGame.Current.GameState = new EndingGameState();
+			OnPuzzleCompletedClient( To.Everyone );
 		}
 	}
+
+	[ConCmd.Client("on_puzzle_completed", CanBeCalledFromServer = true)]
+	public static void OnPuzzleCompletedClient()
+	{
+		//Sandbox.Services.Stats.Increment( "completed_puzzle", 1 );
+	}
+
 
 	/// <summary>
 	/// Find a new client pawn that isn't the current leader.

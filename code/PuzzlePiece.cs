@@ -10,6 +10,8 @@ namespace Jigsaw;
 public partial class PuzzlePiece : ModelEntity
 {
 	private readonly int ConnectionDistance = 2;
+	private readonly float DotThreshold = 0.9990f;
+
 
 	[Net] private PuzzlePiece rootPiece { get; set; } = null;
 	public PuzzlePiece RootPiece => GetRoot();
@@ -18,6 +20,8 @@ public partial class PuzzlePiece : ModelEntity
 		if ( rootPiece == null ) { rootPiece = this; }
 		return rootPiece;
 	}
+
+	public void SetRoot(PuzzlePiece root) { rootPiece = root; }
 
 	[Net] public bool freeFall { get; set; } = false;
 	public bool FreeFall { get { return GetRoot().freeFall; } private set { GetRoot().freeFall = value; } }
@@ -185,37 +189,34 @@ public partial class PuzzlePiece : ModelEntity
 
 	}
 
-	public bool TryConnecting()
+	public bool TryConnecting( out PuzzlePiece neighbor )
 	{
+		neighbor = null;
+
 		// Get the root of active piece.
-		if(GetRoot() != this ) { return GetRoot().TryConnecting(); }
+		if (GetRoot() != this ) { return GetRoot().TryConnecting( out neighbor ); }
 
 		// This is root
 
-		PuzzlePiece neighbor = null;
-
 		// Find close neighbor with active piece root.
-		if( FindCloseNeighbor(out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); OnConnectedServer(); return true; }
+		FindCloseNeighbor( out neighbor );
 
-		// Find close neighbor with pieces connected to active piece root.
-		foreach(PuzzlePiece c in Children )
+		if ( neighbor == null )
 		{
-			if ( c.FindCloseNeighbor( out neighbor ) ) { ConnectRoots( this.GetRoot(), neighbor.GetRoot() ); OnConnectedServer(); return true; }
+			// Find close neighbor with pieces connected to active piece root.
+			foreach ( PuzzlePiece c in Children )
+			{
+				if ( c.FindCloseNeighbor( out neighbor ) ) { break; }
+			}
+		}
+
+		if ( neighbor != null )
+		{
+			return true;
 		}
 
 		return false;
 
-	}
-
-	private void OnConnectedServer()
-	{
-		if(Game.IsServer) OnConnectedClient(To.Everyone);
-	}
-
-	[ConCmd.Client( "add_entry_client", CanBeCalledFromServer = true )]
-	private static void OnConnectedClient()
-	{
-		Actionfeed.AddEntryClient( Game.LocalClient.Name + " made a connection!" );
 	}
 
 	/// <summary>
@@ -232,7 +233,7 @@ public partial class PuzzlePiece : ModelEntity
 		if ( GetNeighbor( -1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Backward * scale), neighbor.Position, Color.White ); }
 		
-		if ( !ConnectedBottom && neighbor != null && dot >= 0.95f )
+		if ( !ConnectedBottom && neighbor != null && dot >= DotThreshold )
 		{
 			if ( (Position + (Transform.Rotation.Backward * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
@@ -242,8 +243,8 @@ public partial class PuzzlePiece : ModelEntity
 
 		if ( GetNeighbor( 1, 0, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Forward * scale), neighbor.Position, Color.White ); }
-		
-		if ( !ConnectedTop && neighbor != null && dot > 0.95f )
+
+		if ( !ConnectedTop && neighbor != null && dot > DotThreshold )
 		{
 			if ( (Position + (Transform.Rotation.Forward * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
@@ -255,7 +256,7 @@ public partial class PuzzlePiece : ModelEntity
 		if ( GetNeighbor( 0, 1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Left * scale), neighbor.Position, Color.White ); }
 
-		if ( !ConnectedLeft && neighbor != null && dot > 0.95f )
+		if ( !ConnectedLeft && neighbor != null && dot > DotThreshold )
 		{
 			if ( (Position + (Transform.Rotation.Left * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
@@ -267,7 +268,7 @@ public partial class PuzzlePiece : ModelEntity
 		if ( GetNeighbor( 0, -1, out neighbor ) ) { dot = Vector3.Dot( neighbor.Rotation.Forward, Rotation.Forward ); }
 		if ( neighbor != null && JigsawGame.Current.Debug ) { DebugOverlay.Line( Position + (Transform.Rotation.Right * scale), neighbor.Position, Color.White ); }
 
-		if ( !ConnectedRight && neighbor != null && dot > 0.95f )
+		if ( !ConnectedRight && neighbor != null && dot > DotThreshold )
 		{
 			if ( (Position + (Transform.Rotation.Right * scale) - neighbor.Position).Length < ConnectionDistance )
 			{
@@ -308,109 +309,6 @@ public partial class PuzzlePiece : ModelEntity
 
 		piece = null;
 		return false;
-	}
-
-	private void ConnectRoots(PuzzlePiece piece, PuzzlePiece other)
-	{
-		if ( Game.IsClient ) return;
-
-		// connect all pieces.
-		PuzzlePiece thisRoot = piece.GetRoot();
-		PuzzlePiece otherRoot = other.GetRoot();
-
-		HeldBy.ClearActivePiece();
-		HeldBy = null;
-
-		#region Piece Side Checks
-
-		IEnumerable<Entity> pNew = thisRoot.Children.Append( thisRoot );
-		IEnumerable<Entity> pOther = otherRoot.Children.Append( otherRoot );
-
-		// For each piece being connected
-		foreach ( PuzzlePiece n in pNew )
-		{
-			// Check against all pieces in other root
-			foreach ( PuzzlePiece o in pOther )
-			{
-				TryConnectSides( n, o );
-			}
-		}
-
-		#endregion
-
-		// COLLAPSE GROUP and PARENT
-
-		// This code seems redundant, but doing it any other way causes weird behaviour. I'm just glad it works...
-		PuzzlePiece[] group = thisRoot.GetGroupPieces().Where( x => x != thisRoot ).ToArray();
-		thisRoot.Parent = otherRoot;
-		thisRoot.rootPiece = otherRoot;
-		thisRoot.Rotation = Rotation.Identity;
-		thisRoot.LocalRotation = Rotation.Identity;
-		thisRoot.LocalPosition = new Vector3( (thisRoot.X - otherRoot.X) * JigsawGame.PieceScale, (thisRoot.Y - otherRoot.Y) * JigsawGame.PieceScale );
-
-		foreach (PuzzlePiece p in group)
-		{
-			// Set null, because otherwise it won't change the hierarchy
-			// (parent is already otherRoot, even though parent is another piece that is parented to otherRoot)
-			p.Parent = null; 
-			
-			p.Parent = otherRoot;
-			p.rootPiece = otherRoot;
-			p.Rotation = Rotation.Identity;
-			p.LocalRotation = Rotation.Identity;
-			p.LocalPosition = new Vector3( (p.X - otherRoot.X) * JigsawGame.PieceScale, (p.Y - otherRoot.Y) * JigsawGame.PieceScale );
-		}
-
-		// Transfer Collision boxes
-		IEnumerable<PhysicsShape> shapes = thisRoot.PhysicsBody.Shapes;
-		foreach( PhysicsShape s in shapes)
-		{
-			otherRoot.PhysicsBody.AddCloneShape( s );
-		}
-		thisRoot.PhysicsClear();
-
-		// Check completion state of the puzzle.
-		JigsawManager.CheckPuzzleCompletionRelative( otherRoot );
-
-		// // // // //
-
-		// Check if piece has a neighboring side with this piece, and connect them.
-		void TryConnectSides( PuzzlePiece piece, PuzzlePiece other )
-		{
-			if(piece == other ) { return; }
-
-			Vector2 dir = new Vector2( other.X - piece.X, other.Y - piece.Y );		
-			if ( dir.Length > 1 ) { return; } // piece is not a direct neighbor.
-			int deg = dir.DirectionToQuadrant();
-
-			//Log.Error( "-------------" );
-			//Log.Error( "pos: " + new Vector2( piece.X, piece.Y ) + ", other pos: " + new Vector2( other.X, other.Y ) + ", dir: " + dir + ", deg: " + deg );
-
-			switch ( deg )
-			{
-				// up
-				case 0:
-					//Log.Error( "Connect right" );
-					piece.ConnectedRight = true;
-					other.ConnectedLeft = true;
-					break;
-				case 1:
-					//Log.Error( "Connect Top" );
-					piece.ConnectedTop = true;
-					other.ConnectedBottom = true;
-					break;
-				case 2:
-					//Log.Error( "Connect Left" );
-					piece.ConnectedLeft = true;
-					other.ConnectedRight = true;
-					break;
-				case 3:
-					//Log.Error( "Connect Down" );
-					piece.ConnectedBottom = true;
-					other.ConnectedTop = true;
-					break;
-			}
-		}
 	}
 
 	public void EnableGroupPhysics( bool enable = true )

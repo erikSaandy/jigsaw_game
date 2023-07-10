@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualBasic;
 using Sandbox;
+using Sandbox.UI;
 using Sandbox.UI.Construct;
 using System;
 using System.IO;
@@ -124,6 +125,16 @@ public partial class JigsawGame : GameManager
 
 		Current.GameState?.Simulate( cl );
 
+	}
+
+	/// <summary>
+	/// Someone is speaking via voice chat. This might be someone in your game,
+	/// or in your party, or in your lobby.
+	/// </summary>
+	public override void OnVoicePlayed( IClient cl )
+	{
+		cl.Voice.WantsStereo = true;
+		VoiceList.Current?.OnVoicePlayed( cl.SteamId, cl.Voice.CurrentLevel );
 	}
 
 }
@@ -327,6 +338,11 @@ public partial class PuzzlingGameState : BaseGameState
 	public PuzzlingGameState() : base()
 	{
 		WriteConsole( "Puzzling" );
+
+		if ( Game.IsServer )
+		{
+			ChatBox.SayInformation( "This puzzle consists of " + (JigsawGame.Current.PieceCountX * JigsawGame.Current.PieceCountY) + " puzzle pieces! \rEnjoy." );
+		}
 
 	}
 

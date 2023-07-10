@@ -32,8 +32,11 @@ public class FirstPersonCamera : CameraComponent
 		if ( Game.LocalClient.Components.TryGet<DevCamera>( out var _ ) )
 			return;
 
-		var viewAngles = (Entity.ViewAngles + Input.AnalogLook).Normal;
-		Entity.ViewAngles = viewAngles.WithPitch( viewAngles.pitch.Clamp( -89f, 89f ) );
-		return;
+		if ( !Input.Down( "use" ) )
+		{
+			var viewAngles = (Entity.ViewAngles + Input.AnalogLook).Normal;
+			Entity.ViewAngles = viewAngles.WithPitch( viewAngles.pitch.Clamp( -89f, 89f ) );
+			return;
+		}
 	}
 }
