@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 namespace Jigsaw;
+
 public partial class InventoryComponent : SimulatedComponent, ISingletonComponent
 {
 	[Net, Predicted] public Entity ActiveChild { get; set; }
@@ -9,7 +10,7 @@ public partial class InventoryComponent : SimulatedComponent, ISingletonComponen
 	[Net] public List<Entity> Items { get; set; } = new();
 	public static int MaxItems { get; set; } = 32;
 
-	[Predicted] public Entity PreviousActiveChild { get; set; }
+	[Predicted] Entity PreviousActiveChild { get; set; }
 
 	public bool AddItem( Entity item )
 	{
@@ -18,7 +19,6 @@ public partial class InventoryComponent : SimulatedComponent, ISingletonComponen
 			Items.Add( item );
 			if ( item is Carriable cr1 ) cr1.OnPickup( Entity );
 			ActiveChildInput = item;
-			ActiveChild = item;
 			return true;
 		}
 		return false;
@@ -110,16 +110,18 @@ public partial class InventoryComponent : SimulatedComponent, ISingletonComponen
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
+
 		// drop weapons
 
-		if ( Input.Pressed( "Drop" ) && ActiveChild != null )
-		{
-			var item = ActiveChild;
-			DropItem( item );
-			item.Velocity = Entity.AimRay.Forward * 200;
-			item.Position = Entity.AimRay.Position + Entity.AimRay.Forward * 48;
-			item.EnableDrawing = true;
-		}
+		// Ya can't drop shit.
+		//if ( Input.Pressed( "Drop" ) && ActiveChild != null )
+		//{
+		//	var item = ActiveChild;
+		//	DropItem( item );
+		//	item.Velocity = Entity.AimRay.Forward * 200;
+		//	item.Position = Entity.AimRay.Position + Entity.AimRay.Forward * 48;
+		//	item.EnableDrawing = true;
+		//}
 
 		if ( ActiveChildInput.IsValid() && ActiveChildInput.Owner == Entity )
 		{
@@ -162,7 +164,7 @@ public partial class InventoryComponent : SimulatedComponent, ISingletonComponen
 	[ConCmd.Client]
 	public static void ConCmdSetActiveChild( int i )
 	{
-		if ( ConsoleSystem.Caller.Pawn is Player ply )
+		if ( ConsoleSystem.Caller.Pawn is JigsawPawn ply )
 		{
 		}
 	}

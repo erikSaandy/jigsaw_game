@@ -28,7 +28,7 @@ public partial class JigsawManager
 	public virtual void DoPlayerDevCam( IClient client )
 	{
 		Game.AssertServer();
-
+		Log.Error( "yo" );
 		var camera = client.Components.Get<DevCamera>( true );
 
 		if ( camera == null )
@@ -45,18 +45,18 @@ public partial class JigsawManager
 	public static void CheckPuzzleCompletionRelative( PuzzlePiece piece )
 	{
 
-		if(JigsawGame.Current.GameState.GetType() != typeof (PuzzlingGameState) )
-		{
-			// This should only happen during debugging.
-			Log.Error( "Completed puzzle during wrong gamestate." );
-			return;
-		}
-
 		PuzzlePiece root = piece.GetRoot();
 		int c = root.Children.Count + 1;
 
 		if( c == JigsawGame.Current.PieceCountX * JigsawGame.Current.PieceCountY)
 		{
+			if ( JigsawGame.Current.GameState.GetType() != typeof( PuzzlingGameState ) )
+			{
+				// This should only happen during debugging.
+				Log.Error( "Completed puzzle during wrong gamestate." );
+				return;
+			}
+
 			JigsawGame.Current.GameState = new EndingGameState();
 			OnPuzzleCompletedClient( To.Everyone );
 		}
@@ -74,15 +74,21 @@ public partial class JigsawManager
 	/// </summary>
 	public static void GetNewGameLeader()
 	{
+		LeaderInfo.Enable( To.Everyone, false );
+
+		//LeaderInfo.Current.Visible = false;
+
 		// Single player in lobby
 		if ( Game.Clients.Count == 1 ) 
 		{ 
 			JigsawGame.Current.Leader = (JigsawPawn)Game.Clients.FirstOrDefault().Pawn;
+			LeaderInfo.Enable( To.Single( JigsawGame.Current.Leader.Client ), true );
 		}
 		else
 		{
 			// If more players, find new leader that isn't current leader.
 			JigsawGame.Current.Leader = (JigsawPawn)Game.Clients.Where( (x => x.Pawn != JigsawGame.Current.Leader) ).OrderBy( x => Guid.NewGuid() ).First().Pawn;
+			LeaderInfo.Enable( To.Single(JigsawGame.Current.Leader.Client), true );
 		}
 
 		ChatBox.SayInformation( JigsawGame.Current.Leader.Client.Name + " is now leader! \rSubmit an image before the time runs out." );

@@ -50,4 +50,15 @@ public partial class JigsawPawn
 		JigsawGame.Current.Debug = !JigsawGame.Current.Debug;
 	}
 
+	/// <summary>
+	/// Enables the devcam. Input to the player will stop and you'll be able to freefly around.
+	/// </summary>
+	[ConCmd.Server( "devcam" )]
+	static void DevcamCommand()
+	{
+		if ( ConsoleSystem.Caller == null ) return;
+
+		JigsawManager.Current?.DoPlayerDevCam( ConsoleSystem.Caller );
+	}
+
 }

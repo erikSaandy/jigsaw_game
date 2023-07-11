@@ -38,13 +38,14 @@
 	{
 		Current = this;
 
-		//AddChild<PickupFeed>();
 		AddChild<Jigsaw.Crosshair>();
 		AddChild<Jigsaw.ChatBox>();
 		AddChild<VoiceList>();
-		//AddChild<VoiceSpeaker>();
+		AddChild<VoiceSpeaker>();
 		AddChild<VotingTimer>();
 		AddChild<Actionfeed>();
+		AddChild<LeaderInfo>();
+
 	}
 
 	protected override int BuildHash()

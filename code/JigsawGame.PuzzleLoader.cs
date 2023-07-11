@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Jigsaw;
-public partial class JigsawGame : GameManager
+public partial class JigsawGame
 {
 
 	// All PuzzlePiece entities (NETWORKED)

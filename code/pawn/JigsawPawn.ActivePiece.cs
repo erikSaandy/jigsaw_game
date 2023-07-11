@@ -12,7 +12,7 @@ public partial class JigsawPawn : AnimatedEntity
 
 	[Net, Predicted] public PuzzlePiece ActivePiece { get; set; } = null;
 
-	private readonly float SmoothTime = 1f;
+	private readonly float SmoothTime = 0.5f;
 	private Vector3 DampVelocity = Vector3.Zero;
 	[Net] private Vector3 PositionOld { get; set; } = Vector3.Zero;
 	[Net] private Vector3 PositionNew { get; set; } = Vector3.Zero;
@@ -50,11 +50,13 @@ public partial class JigsawPawn : AnimatedEntity
 			{
 				// pos
 
-				// Get wanted pos instead, based on all pieces...
+				// Get wanted pos instead, based on all piewces...
 				Vector3 velocity = GetWantedVelocity();
+				//Vector3 velocity = EyeRotation.Forward * MaxHeldDistance;
+				//GetWantedVelocity( ActivePiece.Rotation, ref velocity );
 
 				PositionOld = ActivePiece.Position;
-				PositionNew = Vector3.SmoothDamp( ActivePiece.Position, ActivePiece.Position + velocity, ref DampVelocity, 0.5f, Time.Delta * 2);
+				PositionNew = Vector3.SmoothDamp( ActivePiece.Position, ActivePiece.Position + velocity, ref DampVelocity, SmoothTime, Time.Delta * 2);
 				velocity = PositionNew - PositionOld;
 				ActivePiece.Velocity = velocity * 100;
 
@@ -256,15 +258,18 @@ public partial class JigsawPawn : AnimatedEntity
 
 	}
 
-	private void GetCollisions(Rotation rot, ref Vector3 vel)
+	private void GetWantedVelocity(Rotation rot, ref Vector3 vel)
 	{
-		PuzzlePiece[] group = ActivePiece.GetGroupPieces().Where( x => x.IsValid ).ToArray();
+		PuzzlePiece[] pieces = ActivePiece.GetGroupPieces().Where( x => x.IsValid ).ToArray();
 
-		foreach ( PuzzlePiece piece in group )
+		float pOfDst = (ActivePiece.Position - EyePosition).Length / MaxHeldDistance;
+		Vector3 move = vel.Normal * MaxHeldDistance * pOfDst;
+
+		foreach ( PuzzlePiece piece in pieces )
 		{
 			TraceResult trace = Trace.Sweep( piece.PhysicsBody, 
-				new Transform(piece.PhysicsBody.Position, piece.PhysicsBody.Rotation ), // FROM
-				new Transform( piece.PhysicsBody.Position + vel, rot ) ) // TO
+				new Transform( piece.PhysicsBody.Position, piece.PhysicsBody.Rotation.Angles().WithYaw(YawOld).ToRotation() ), // FROM
+				new Transform( piece.PhysicsBody.Position + move, rot ) ) // TO
 				.WithAnyTags( CollisionTags )
 				.Ignore( ActivePiece, true )
 				.Run();
@@ -275,17 +280,17 @@ public partial class JigsawPawn : AnimatedEntity
 
 				// We need to check each axis of the vector to know how far to move in each direction.
 				//This vector's X is smaller than any other vector so far (i.e first collision)
-				if ( MathF.Abs( v.x ) < MathF.Abs( vel.x ) )
+				if ( MathF.Abs( v.x ) < MathF.Abs( move.x ) )
 				{
 					vel.x = v.x;
 				}
 
-				if ( MathF.Abs( v.y ) < MathF.Abs( vel.y ) )
+				if ( MathF.Abs( v.y ) < MathF.Abs( move.y ) )
 				{
 					vel.y = v.y;
 				}
 
-				if ( MathF.Abs( v.z ) < MathF.Abs( vel.z ) )
+				if ( MathF.Abs( v.z ) < MathF.Abs( move.z ) )
 				{
 					vel.z = v.z;
 				}
@@ -296,7 +301,7 @@ public partial class JigsawPawn : AnimatedEntity
 	private void ActivePieceInput()
 	{
 
-		if ( Input.StopProcessing )
+		if ( Input.StopProcessing || Inventory.ActiveChild?.GetType() != typeof (Fists) )
 			return;
 
 		if ( Input.Pressed( "attack1" ))

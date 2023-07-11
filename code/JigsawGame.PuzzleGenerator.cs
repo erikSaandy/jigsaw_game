@@ -11,7 +11,7 @@ using Sandbox.Utility;
 
 namespace Jigsaw;
 
-public partial class JigsawGame : GameManager
+public partial class JigsawGame
 {
 
 	public static readonly int BacksideUVTiling = 8;

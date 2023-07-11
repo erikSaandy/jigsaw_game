@@ -1,4 +1,5 @@
-﻿using Sandbox;
+﻿using Jigsaw;
+using Sandbox;
 using System.Linq;
 
 namespace Jigsaw;
@@ -23,9 +24,12 @@ public class Carriable : AnimatedEntity
 	}
 	internal virtual void CarriableSpawn()
 	{
-		SetModel( WorldModelPath );
-		SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
-		EnableTouch = true;
+		if ( WorldModelPath != "" )
+		{
+			SetModel( WorldModelPath );
+			SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
+			EnableTouch = true;
+		}
 	}
 	/// <summary>
 	/// Create the viewmodel. You can override this in your base classes if you want
@@ -60,9 +64,21 @@ public class Carriable : AnimatedEntity
 		{
 			if ( ply.Inventory?.Items.Where( x => x.GetType() == this.GetType() ).Count() <= 0 )
 			{
-
 				ply.Inventory?.AddItem( this );
 			}
+
+			//else
+			//{
+			//	if ( this is Weapon wep )
+			//	{
+			//		wep.PrimaryAmmo -= (int)(ply.Ammo?.GiveAmmo( wep.PrimaryAmmoType, wep.PrimaryAmmo ));
+			//		wep.SecondaryAmmo -= (int)(ply.Ammo?.GiveAmmo( wep.SecondaryAmmoType, wep.SecondaryAmmo ));
+			//		if ( wep.PrimaryAmmo <= 0 && wep.SecondaryAmmo <= 0 )
+			//		{
+			//			wep.Delete();
+			//		}
+			//	}
+			//}
 		}
 	}
 	public virtual void OnPickup( Entity equipper )
@@ -74,12 +90,6 @@ public class Carriable : AnimatedEntity
 		EnableDrawing = false;
 		EnableHideInFirstPerson = true;
 		EnableShadowInFirstPerson = true;
-
-		if ( IsLocalPawn )
-		{
-			DestroyViewModel();
-			CreateViewModel();
-		}
 	}
 	public virtual void OnDrop( Entity dropper )
 	{
@@ -90,11 +100,6 @@ public class Carriable : AnimatedEntity
 		EnableDrawing = true;
 		EnableHideInFirstPerson = false;
 		EnableShadowInFirstPerson = false;
-
-		if ( Game.IsClient )
-		{
-			DestroyViewModel();
-		}
 	}
 	public virtual void OnActiveStart()
 	{
@@ -107,7 +112,7 @@ public class Carriable : AnimatedEntity
 	}
 	public virtual void OnActiveEnd()
 	{
-		if ( Parent is Player ) EnableDrawing = false;
+		if ( Parent is JigsawPawn ) EnableDrawing = false;
 		if ( Game.IsClient )
 		{
 			DestroyViewModel();

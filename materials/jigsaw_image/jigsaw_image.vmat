@@ -28,7 +28,7 @@ Layer0
 
 	//---- Roughness ----
 	g_flRoughnessScaleFactor "2.000"
-	TextureRoughness "[0.655000 0.655000 0.655000 0.000000]"
+	TextureRoughness "[0.789000 0.789000 0.789000 0.000000]"
 
 	//---- Texture Coordinates ----
 	g_nScaleTexCoordUByModelScaleAxis "0"

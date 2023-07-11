@@ -7,10 +7,13 @@ namespace Jigsaw;
 partial class Fists : Weapon
 {
 	public override string ViewModelPath => "models/first_person/first_person_arms.vmdl";
-	public override float PrimaryRate => 2.0f;
-	public override float SecondaryRate => 2.0f;
+	public override string WorldModelPath => "";
 
-	public override bool CanReload()
+	public override float PrimaryAttackDelay => 0.9f;
+	public override float SecondaryAttackDelay => 0.9f;
+
+
+	public override bool CanReloadPrimary()
 	{
 		return false;
 	}
@@ -29,18 +32,19 @@ partial class Fists : Weapon
 		(Owner as AnimatedEntity)?.SetAnimParameter( "b_attack", true );
 	}
 
-	public override void AttackPrimary()
+	public override void PrimaryAttack()
 	{
 		Attack( true );
 	}
 
-	public override void AttackSecondary()
+	public override void SecondaryAttack()
 	{
 		Attack( false );
 	}
 
-	public override void OnCarryDrop( Entity dropper )
+	public override void OnDrop( Entity dropper )
 	{
+		base.OnDrop(dropper);
 	}
 
 	public override void SimulateAnimator( CitizenAnimationHelper anim )
@@ -62,7 +66,7 @@ partial class Fists : Weapon
 			Position = Position,
 			Owner = Owner,
 			EnableViewmodelRendering = true,
-			ShouldBob = true,
+			ShouldBob = false,
 		};
 
 		ViewModelEntity.SetModel( ViewModelPath );

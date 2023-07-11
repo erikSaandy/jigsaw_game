@@ -21,7 +21,7 @@ namespace Jigsaw;
 /// You can use this to create things like HUDs and declare which player class
 /// to use for spawned players.
 /// </summary>
-public partial class JigsawGame : GameManager
+public partial class JigsawGame : BaseGameManager
 {
 	[Net] public bool Debug { get; set; } = false;
 
@@ -119,6 +119,16 @@ public partial class JigsawGame : GameManager
 		Current.GameState?.ClientDisconnect( cl, reason );
 	}
 
+
+	/// <summary>
+	/// Called when the game is shutting down.
+	/// </summary>
+	public override void Shutdown()
+	{
+		if ( Current == this )
+			Current = null;
+	}
+
 	public override void Simulate( IClient cl )
 	{
 		base.Simulate( cl );
@@ -205,6 +215,7 @@ public partial class VotingGameState : BaseGameState
 		if ( Game.IsServer )
 		{
 			Timer = 0;
+
 			if ( Game.Clients.Count > 0 )
 			{
 				// Find new leader.
@@ -229,6 +240,8 @@ public partial class VotingGameState : BaseGameState
 			if ( GetTimer() <= 0 )
 			{
 				JigsawGame.Current.Leader = null;
+				LeaderInfo.Enable( To.Everyone, false );
+
 				ChatBox.SayInformation( cl.Name + " is too slow! \rLet's find a new leader." );
 				RestartVoting();
 			}
@@ -247,13 +260,19 @@ public partial class VotingGameState : BaseGameState
 		if ( Game.IsClient ) return;
 
 		// Make sure late clients know who is leader and a vote is going on.
-		if ( JigsawGame.Current.Leader != null && client != JigsawGame.Current.Leader?.Client )
+		if ( JigsawGame.Current.Leader != null )
 		{
-			ChatBox.SayInformation( To.Single( client ), 
-				"Welcome " + client.Name + "!\r"+
-				JigsawGame.Current.Leader.Client.Name + " is currently chosing a puzzle image. Please hold on!"
-				);
+			if ( client == JigsawGame.Current.Leader?.Client )
+			{	
+				LeaderInfo.Enable( To.Single( client ), true );
+			}
+			else
+			{
+				ChatBox.SayInformation( To.Single( client ), "Welcome " + client.Name + "!\r" +
+				JigsawGame.Current.Leader.Client.Name + " is currently chosing a puzzle image. Please hold on!" );
+			}
 		}
+
 	}
 
 	public override void ClientSpawned()
@@ -304,6 +323,7 @@ public partial class LoadingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
+			LeaderInfo.Enable( To.Everyone, false );
 			Log.Info( "Loading server puzzles pieces..." );
 			JigsawGame.Current.LoadEntities();
 		}

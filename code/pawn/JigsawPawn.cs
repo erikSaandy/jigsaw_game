@@ -16,21 +16,23 @@ public partial class JigsawPawn : AnimatedEntity
 		Event.Run( "Player.PreSpawn", this );
 		base.Spawn();
 		Velocity = Vector3.Zero;
+
 		Components.RemoveAll();
+
 		LifeState = LifeState.Alive;
 		Health = 100;
 
 		SetModel( "models/citizen/citizen.vmdl" );
 		Components.Add( new MovementController() );
 		Components.Add( new FirstPersonCamera() );
-		//Components.Add( new AmmoStorageComponent() );
+		Components.Add( new AmmoStorageComponent() );
 		Components.Add( new InventoryComponent() );
 		Components.Add( new CitizenAnimationComponent() );
 		Components.Add( new UseComponent() );
 		//Components.Add( new FallDamageComponent() );
 		Components.Add( new UnstuckComponent() );
-		//Ammo.ClearAmmo();
 
+		Ammo.ClearAmmo();
 		//CreateHull();
 		Tags.Add( "player" );
 
@@ -44,7 +46,10 @@ public partial class JigsawPawn : AnimatedEntity
 		EnableHitboxes = true;
 
 		MoveToSpawnpoint();
-		
+
+		Inventory.AddItem( TypeLibrary.Create<Entity>( "Flashlight" ) );
+		Inventory.AddItem( TypeLibrary.Create<Entity>( "Fists" ) );
+
 		Event.Run( "Player.PostSpawn", this );
 
 	}
@@ -86,9 +91,8 @@ public partial class JigsawPawn : AnimatedEntity
 	public MovementComponent MovementController => Components.Get<MovementComponent>();
 	public CameraComponent CameraController => Components.Get<CameraComponent>();
 	public AnimationComponent AnimationController => Components.Get<AnimationComponent>();
-
 	public InventoryComponent Inventory => Components.Get<InventoryComponent>();
-	//public AmmoStorageComponent Ammo => Components.Get<AmmoStorageComponent>();
+	public AmmoStorageComponent Ammo => Components.Get<AmmoStorageComponent>();
 	public UseComponent UseKey => Components.Get<UseComponent>();
 	public UnstuckComponent UnstuckController => Components.Get<UnstuckComponent>();
 
@@ -163,7 +167,6 @@ public partial class JigsawPawn : AnimatedEntity
 	public override void OnKilled()
 	{
 		if ( Game.IsClient ) return;
-
 		Event.Run( "Player.PreOnKilled", this );
 		LifeState = LifeState.Dead;
 		BecomeRagdoll( LastDamage );
@@ -173,13 +176,18 @@ public partial class JigsawPawn : AnimatedEntity
 
 		EnableAllCollisions = false;
 		EnableDrawing = false;
-
+		Inventory.DropItem( Inventory.ActiveChild );
+		foreach ( var item in Inventory.Items.ToList() )
+		{
+			Inventory.DropItem( item );
+		}
 		Inventory.Items.Clear();
 
 		Components.Add( new NoclipController() );
 
 		Event.Run( "Player.PostOnKilled", this );
 	}
+
 
 	//---------------------------------------------// 
 
@@ -199,7 +207,6 @@ public partial class JigsawPawn : AnimatedEntity
 			if ( i.Enabled ) i.BuildInput();
 		}
 
-		Inventory?.ActiveChild?.BuildInput();
 	}
 
 	/// <summary>
@@ -209,17 +216,17 @@ public partial class JigsawPawn : AnimatedEntity
 	{
 		base.Simulate( cl );
 
-		//if ( Game.IsClient )
-		//{
-		//	if ( Input.MouseWheel > 0.1 )
-		//	{
-		//		Inventory?.SwitchActiveSlot( 1, true );
-		//	}
-		//	if ( Input.MouseWheel < -0.1 )
-		//	{
-		//		Inventory?.SwitchActiveSlot( -1, true );
-		//	}
-		//}
+		if ( ActivePiece == null )
+		{
+			if ( Input.MouseWheel > 0.1 )
+			{
+				Inventory?.SwitchActiveSlot( 1, true );
+			}
+			if ( Input.MouseWheel < -0.1 )
+			{
+				Inventory?.SwitchActiveSlot( -1, true );
+			}
+		}
 
 		// these are to be done in order and before the simulated components
 		UnstuckController?.Simulate( cl );
@@ -234,30 +241,6 @@ public partial class JigsawPawn : AnimatedEntity
 
 		SimulateActivePiece( cl );
 
-		if ( Inventory?.ActiveChild != null )
-		{
-			SimulateActiveChild( cl, Inventory?.ActiveChild );
-		}
-
-	}
-
-	public virtual void SimulateActiveChild( IClient cl, Entity child )
-	{
-		if ( Inventory == null ) return;
-
-		if ( Inventory.PreviousActiveChild != child )
-		{
-			OnActiveChildChanged( Inventory.PreviousActiveChild, child );
-			Inventory.PreviousActiveChild = child;
-		}
-
-		if ( !Inventory.PreviousActiveChild.IsValid() )
-			return;
-
-		if ( Inventory.PreviousActiveChild.IsAuthority )
-		{
-			Inventory.PreviousActiveChild.Simulate( cl );
-		}
 	}
 
 	/// <summary>
