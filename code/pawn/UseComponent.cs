@@ -17,6 +17,10 @@ public partial class UseComponent : SimulatedComponent
 		// This is serverside only
 		if ( !Game.IsServer ) return;
 
+		// Don't do use stuff while holding piece.
+		JigsawPawn pawn = (JigsawPawn)cl.Pawn;
+		if ( pawn.ActivePiece != null ) return;
+
 		// Turn prediction off
 		using ( Prediction.Off() )
 		{

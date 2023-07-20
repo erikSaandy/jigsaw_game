@@ -3,12 +3,15 @@ using Sandbox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jigsaw;
 
 public partial class JigsawPawn : AnimatedEntity
 {
 	private readonly string[] CollisionTags = { "default", "solid", "player" };
+
+	private readonly string ConnectSound = "sounds/piece_connections/piece_connect.sound";
 
 	[Net, Predicted] public PuzzlePiece ActivePiece { get; set; } = null;
 
@@ -25,7 +28,7 @@ public partial class JigsawPawn : AnimatedEntity
 
 	[Net] public float YawOld { get; set; } = 0;
 
-	Particles HoldSplashParticle { get; set; }
+	[Predicted] Particles HoldSplashParticle { get; set; }
 
 	private readonly int MaxHeldDistance = 128;
 
@@ -78,12 +81,13 @@ public partial class JigsawPawn : AnimatedEntity
 
 		}
 
-		HoldSplashParticle.SetPosition( 1, ActivePiece.Position - HeldOffset );	
+		HoldSplashParticle?.SetPosition( 1, ActivePiece.Position - HeldOffset );	
 
 		if ( ActivePiece.TimeSincePickedUp > 0.5f )
 		{
 			if ( ActivePiece.TryConnecting( out PuzzlePiece neighbor ) )
 			{
+
 				if ( Game.IsServer )
 				{
 					ConnectRoots( ActivePiece, neighbor );
@@ -142,16 +146,25 @@ public partial class JigsawPawn : AnimatedEntity
 
 		#region Piece Side Checks
 
-		IEnumerable<Entity> pNew = thisRoot.Children.Append( thisRoot );
-		IEnumerable<Entity> pOther = otherRoot.Children.Append( otherRoot );
+		IEnumerable<Entity> pNew = thisRoot.GetGroupPieces();
+		IEnumerable<Entity> pOther = otherRoot.GetGroupPieces();
+
+		int cCount = 0;
 
 		// For each piece being connected
 		foreach ( PuzzlePiece n in pNew )
 		{
+			bool pConnected = false;
+
 			// Check against all pieces in other root
 			foreach ( PuzzlePiece o in pOther )
 			{
-				TryConnectSides( n, o );
+				if( TryConnectSides( n, o ) && !pConnected )
+				{
+					n.PlaySoundDelayed( ConnectSound, 75 * cCount );
+					pConnected = true;
+					cCount++;
+				}
 			}
 		}
 
@@ -194,12 +207,12 @@ public partial class JigsawPawn : AnimatedEntity
 		// // // // //
 
 		// Check if piece has a neighboring side with this piece, and connect them.
-		void TryConnectSides( PuzzlePiece piece, PuzzlePiece other )
+		bool TryConnectSides( PuzzlePiece piece, PuzzlePiece other )
 		{
-			if ( piece == other ) { return; }
+			if ( piece == other ) { return false; }
 
 			Vector2 dir = new Vector2( other.X - piece.X, other.Y - piece.Y );
-			if ( dir.Length > 1 ) { return; } // piece is not a direct neighbor.
+			if ( dir.Length > 1 ) { return false; } // piece is not a direct neighbor.
 			int deg = dir.DirectionToQuadrant();
 
 			//Log.Error( "-------------" );
@@ -212,23 +225,27 @@ public partial class JigsawPawn : AnimatedEntity
 					//Log.Error( "Connect right" );
 					piece.ConnectedRight = true;
 					other.ConnectedLeft = true;
-					break;
+					return true;
 				case 1:
 					//Log.Error( "Connect Top" );
 					piece.ConnectedTop = true;
 					other.ConnectedBottom = true;
-					break;
+					return true;
 				case 2:
 					//Log.Error( "Connect Left" );
 					piece.ConnectedLeft = true;
 					other.ConnectedRight = true;
-					break;
+					return true;
 				case 3:
 					//Log.Error( "Connect Down" );
 					piece.ConnectedBottom = true;
 					other.ConnectedTop = true;
-					break;
+					return true;
+
 			}
+
+			return false;
+
 		}
 	}
 
@@ -354,9 +371,8 @@ public partial class JigsawPawn : AnimatedEntity
 		WantedAngleOffset = (ActivePiece.Rotation.Angles() - EyeRotation.Angles()).WithPitch( 0 ).WithRoll( 0 );
 		YawOld = ActivePiece.Rotation.Yaw();
 
-		if (HoldSplashParticle != null) HoldSplashParticle.Destroy();
-
-		HoldSplashParticle = Particles.Create( "particles/hold_splash.vpcf", ActivePiece, "", true );
+		HoldSplashParticle?.Destroy();
+		//HoldSplashParticle = Particles.Create( "particles/hold_splash.vpcf", ActivePiece, "", true );
 	}
 
 	public void ClearActivePiece()

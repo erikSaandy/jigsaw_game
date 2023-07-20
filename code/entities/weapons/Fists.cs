@@ -20,6 +20,8 @@ partial class Fists : Weapon
 
 	private void Attack( bool leftHand )
 	{
+		return; // no attack. lol
+
 		if ( MeleeAttack() )
 		{
 			OnMeleeHit( leftHand );

@@ -10,7 +10,7 @@ namespace Jigsaw;
 public partial class PuzzlePiece : ModelEntity
 {
 	private readonly int ConnectionDistance = 2;
-	private readonly float DotThreshold = 0.9990f;
+	private readonly float DotThreshold = 0.90f;
 
 
 	[Net] private PuzzlePiece rootPiece { get; set; } = null;
@@ -94,10 +94,15 @@ public partial class PuzzlePiece : ModelEntity
 
 		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
+
 		//GeneratePipCollision();
 
 		PhysicsEnabled = true;
 		UsePhysicsCollision = true;
+		EnableSolidCollisions = true;
+		EnableTraceAndQueries = true;
+
+		Position = Vector3.Zero;
 
 	}
 
@@ -321,11 +326,17 @@ public partial class PuzzlePiece : ModelEntity
 			b.GravityEnabled = enable;
 		}
 
-		//e.PhysicsEnabled = enable;
-		UsePhysicsCollision = enable;
-		EnableAllCollisions = enable;
-		EnableSolidCollisions = enable;
-		EnableTraceAndQueries = true;
+		// When enable = true, transmit default. else transmit always.
+		int transmit = (Convert.ToInt32( enable ) - 1) * -1;
+		//Log.Error( transmit );
+		Transmit = (TransmitType)transmit;
+
+
+		//UsePhysicsCollision = enable;
+		//EnableAllCollisions = enable;
+
+		//EnableSolidCollisions = true;
+		//EnableTraceAndQueries = true;
 
 	}
 

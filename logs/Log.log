@@ -1,0 +1,475 @@
+2023/07/19 20:51:33.5872	engine/Engine	SteamAPI_Init succeeded.  SteamID is [U:1:97414701] (76561198057680429), AppID is 590830	
+2023/07/19 20:51:33.6475	engine/Steam	CSteam3Client::Activate succeeded.  SteamID is [U:1:97414701] (76561198057680429), AppID is 590830	
+2023/07/19 20:51:33.6643	engine/Engine	Couldn't open addon file (D:\Dropbox\sbox\laughing_stock\.addon) - addon content won't be filesystem mounted	
+2023/07/19 20:51:33.6656	engine/Engine	Couldn't open addon file (D:\Dropbox\sbox\puzzle_testing\.addon) - addon content won't be filesystem mounted	
+2023/07/19 20:51:33.6656	engine/Engine	Couldn't open addon file (D:\Dropbox\sbox\Games\jigsaw\.addon) - addon content won't be filesystem mounted	
+2023/07/19 20:51:37.9410	tools	Was unable to determine package for /materials/cup/coffe1.vmat_c	
+2023/07/19 20:51:37.9410	tools	Was unable to determine package for /models/ad4/cupe_new.vmdl_c	
+2023/07/19 20:51:37.9470	tools	Was unable to determine package for /materials/cup/cup.vmat_c	
+2023/07/19 20:51:37.9470	tools	Was unable to determine package for /materials/cup/foam003_1k_color_jpg_c39a237f.generated.vtex_c	
+2023/07/19 20:51:37.9470	tools	Was unable to determine package for /materials/cup/marble021_1k_normalgl_jpg_d39332c5.generated.vtex_c	
+2023/07/19 20:51:37.9470	tools	Was unable to determine package for /materials/cup/marble021_1k_color_jpg_54fbc0e3.generated.vtex_c	
+2023/07/19 20:51:37.9470	tools	Was unable to determine package for /materials/cup/foam003_1k_normalgl_jpg_cf9327fa.generated.vtex_c	
+2023/07/19 20:51:37.9470	tools	Was unable to determine package for /materials/cup/cup1.vmat_c	
+2023/07/19 20:51:39.5740	tools	Was unable to determine package for /models/sbox_props/cardboard_box/cardboard_box_open.vmdl_c	
+2023/07/19 20:51:40.3592	tools	Was unable to determine package for /materials/pallet_truck/pallet_truck.vmat_c	
+2023/07/19 20:51:40.3592	tools	Was unable to determine package for /models/pallet_truck/pallet_truck.vmdl_c	
+2023/07/19 20:51:40.5488	tools	Was unable to determine package for /materials/default/default_ao_tga_559f1ac6.generated.vtex_c	
+2023/07/19 20:51:41.6731	tools	Was unable to determine package for /materials/default/default_color_tga_47b1af3d.generated.vtex_c	
+2023/07/19 20:51:41.6731	tools	Was unable to determine package for /models/vamera2/photo.vmdl_c	
+2023/07/19 20:51:41.6731	tools	Was unable to determine package for /models/vamera2/metal.vmat_c	
+2023/07/19 20:51:41.6731	tools	Was unable to determine package for /models/vamera2/linz.vmat_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/skin.vmat_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/text.vmat_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/metal_mails.vmat_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/metal_corpus.vmat_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/button.vmat_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_text_basecolor_png_b3c5a789.generated.vtex_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_button_basecolor_png_156d91da.generated.vtex_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_linz_basecolor_png_ed84e118.generated.vtex_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_metal_corpus_basecolor_png_80a59659.generated.vtex_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_skin_basecolor_png_2685647c.generated.vtex_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_metal_corpus_normal_png_4847b33c.generated.vtex_c	
+2023/07/19 20:51:41.6808	tools	Was unable to determine package for /models/vamera2/photo_low_linz_normal_png_372797de.generated.vtex_c	
+2023/07/19 20:51:41.6972	tools	Was unable to determine package for /models/vamera2/photo_low_button_normal_png_441fe8b.generated.vtex_c	
+2023/07/19 20:51:41.6972	tools	Was unable to determine package for /models/vamera2/photo_low_skin_normal_png_4602eba8.generated.vtex_c	
+2023/07/19 20:51:41.6972	tools	Was unable to determine package for /models/vamera2/photo_low_text_normal_png_8a13a3b9.generated.vtex_c	
+2023/07/19 20:51:41.6972	tools	Was unable to determine package for /models/vamera2/photo_low_metal_normal_png_a7491fec.generated.vtex_c	
+2023/07/19 20:51:41.6972	tools	Was unable to determine package for /models/vamera2/photo_low_metal_nails_normal_png_ee060914.generated.vtex_c	
+2023/07/19 20:51:41.9972	tools	Was unable to determine package for /materials/pallet_truck/pallettruck_normal_png_170546fb.generated.vtex_c	
+2023/07/19 20:51:41.9972	tools	Was unable to determine package for /materials/pallet_truck/pallettruck_color_png_7f9f930b.generated.vtex_c	
+2023/07/19 20:51:42.0720	tools	Was unable to determine package for /materials/generic/wall_brick_new.vmat_c	
+2023/07/19 20:51:42.0720	tools	Was unable to determine package for /textures/wall/wall_brick_mask_tga_70c51a3e.generated.vtex_c	
+2023/07/19 20:51:42.0720	tools	Was unable to determine package for /textures/floor/floor_damaged_asphalt_normal_tga_408dba0a.generated.vtex_c	
+2023/07/19 20:51:42.1023	tools	Was unable to determine package for /textures/wall/wall_brick_new_ao_tga_121447f3.generated.vtex_c	
+2023/07/19 20:51:42.1070	tools	Was unable to determine package for /materials/generic/floor_asphalt_blend.vmat_c	
+2023/07/19 20:51:42.1070	tools	Was unable to determine package for /textures/wall/wall_brick_new_normal_tga_9d88936f.generated.vtex_c	
+2023/07/19 20:51:42.1070	tools	Was unable to determine package for /textures/floor/floor_slick_asphalt_color_tga_d5e22882.generated.vtex_c	
+2023/07/19 20:51:42.1070	tools	Was unable to determine package for /textures/floor/floor_slick_asphalt_rough_tga_c4d6fde4.generated.vtex_c	
+2023/07/19 20:51:42.1335	tools	Was unable to determine package for /textures/floor/floor_slick_asphalt_normal_tga_5a7c84e9.generated.vtex_c	
+2023/07/19 20:51:42.1725	tools	Was unable to determine package for /textures/floor/floor_damaged_asphalt_rough_tga_37e9f2f8.generated.vtex_c	
+2023/07/19 20:51:42.3702	engine/HangWatchdog	Hang detected.	
+2023/07/19 20:51:47.1513	tools	Was unable to determine package for /materials/default/default_ao_tga_559f1ac6.vtex_c	
+2023/07/19 20:51:47.1714	tools	Was unable to determine package for /materials/hotspot/glass02/glass02.rect	
+2023/07/19 20:51:47.1828	tools	Was unable to determine package for /materials/hotspot/glass02/glass02_hs.vmat_c	
+2023/07/19 20:51:47.1828	tools	Was unable to determine package for /materials/hotspot/glass02/glass02_hs_normal_png_e1169fef.generated.vtex_c	
+2023/07/19 20:51:47.2042	tools	Was unable to determine package for /materials/hotspot/glass02/glass02_hs_rough_png_e6805dba.generated.vtex_c	
+2023/07/19 20:51:47.3512	tools	Was unable to determine package for /models/bin_01/bin_01.vmdl_c	
+2023/07/19 20:51:47.3582	tools	Was unable to determine package for /models/bin_01/material/bin_01.vmat_c	
+2023/07/19 20:51:47.3686	tools	Was unable to determine package for /models/bottles/jameson/bottle_jameson.vmdl_c	
+2023/07/19 20:51:47.3686	tools	Was unable to determine package for /models/bottles/jameson/material/bottle_jameson.vmat_c	
+2023/07/19 20:51:47.3860	tools	Was unable to determine package for /models/dice_01/dice_01.vmdl_c	
+2023/07/19 20:51:47.3860	tools	Was unable to determine package for /models/dice_01/material/dice_01_a.vmat_c	
+2023/07/19 20:51:47.4017	tools	Was unable to determine package for /models/dice_01/material/dice_01_b.vmat_c	
+2023/07/19 20:51:47.4853	tools	Was unable to determine package for /models/frame_01/frame_01.vmdl_c	
+2023/07/19 20:51:47.4853	tools	Was unable to determine package for /models/frame_01/material/frame_01.vmat_c	
+2023/07/19 20:51:47.5034	tools	Was unable to determine package for /models/frame_01/material/picture_01.vmat_c	
+2023/07/19 20:51:47.5104	tools	Was unable to determine package for /models/frame_01/material/picture_02.vmat_c	
+2023/07/19 20:51:47.5104	tools	Was unable to determine package for /models/frame_01/material/picture_03.vmat_c	
+2023/07/19 20:51:47.5289	tools	Was unable to determine package for /models/frame_01/material/picture_04.vmat_c	
+2023/07/19 20:51:47.5289	tools	Was unable to determine package for /models/frame_01/material/picture_05.vmat_c	
+2023/07/19 20:51:47.5478	tools	Was unable to determine package for /models/frame_01/material/picture_06.vmat_c	
+2023/07/19 20:51:47.5478	tools	Was unable to determine package for /models/frame_01/material/picture_07.vmat_c	
+2023/07/19 20:51:47.5643	tools	Was unable to determine package for /models/frame_01/material/picture_08.vmat_c	
+2023/07/19 20:51:47.5721	tools	Was unable to determine package for /models/frame_01/material/picture_09.vmat_c	
+2023/07/19 20:51:47.5721	tools	Was unable to determine package for /models/frame_01/material/picture_10.vmat_c	
+2023/07/19 20:51:47.5903	tools	Was unable to determine package for /models/frame_01/material/picture_11.vmat_c	
+2023/07/19 20:51:47.5903	tools	Was unable to determine package for /models/frame_01/material/picture_12.vmat_c	
+2023/07/19 20:51:47.6077	tools	Was unable to determine package for /models/frame_01/material/picture_13.vmat_c	
+2023/07/19 20:51:47.6077	tools	Was unable to determine package for /models/frame_01/material/picture_14.vmat_c	
+2023/07/19 20:51:47.7499	tools	Was unable to determine package for /models/kitchen/condiment_bottle/condiment_bottle.vmdl_c	
+2023/07/19 20:51:47.7499	tools	Was unable to determine package for /models/kitchen/condiment_bottle/material/condiment_bottle.vmat_c	
+2023/07/19 20:51:47.7661	tools	Was unable to determine package for /models/kitchen/packaged_oats/material/packaged_oats.vmat_c	
+2023/07/19 20:51:47.7661	tools	Was unable to determine package for /models/kitchen/packaged_oats/packaged_oats.vmdl_c	
+2023/07/19 20:51:48.0119	engine/AssetSystem	AssetSystem initialized in 10.97 seconds. [0.15 load, 0.18 scan, 10.60 dependencies, 0.04 save]	
+2023/07/19 20:51:49.5378	Generic	Create Compiler `base`	
+2023/07/19 20:51:49.5596	Generic	Create Compiler `local.menu`	
+2023/07/19 20:51:49.5596	Generic	Create Compiler `toolbase`	
+2023/07/19 20:51:49.5596	Generic	Create Compiler `local.entityprefabed`	
+2023/07/19 20:51:49.5596	Generic	Create Compiler `local.shadergraph`	
+2023/07/19 20:51:49.5596	Generic	Create Compiler `saandy.jigsaw`	
+2023/07/19 20:51:55.0244	engine/HangWatchdog	Hang detected.	
+2023/07/19 20:52:00.0891	engine/HangWatchdog	Hang detected.	
+2023/07/19 20:52:11.0890	engine/Qt	invalid splitter encountered	
+2023/07/19 20:52:20.1188	GameMenu	Couldn't find menu in package.saandy.jigsaw - using fallback	
+2023/07/19 20:52:45.6238	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6238	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6238	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6238	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6238	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\dx\dxfunctions.h (118) : Assertion Failed in function _DOD3D():
+false
+D3D call for D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) failed with 0x80070057, logging minidump	
+2023/07/19 20:52:45.6238	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6238	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6238	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6238	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6238	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6238	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6238	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6238	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6238	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6238	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6238	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6238	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6344	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6344	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6344	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6344	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6344	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 24	
+2023/07/19 20:52:45.6344	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6344	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6344	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6344	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 24	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 0	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 27
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 0	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 27
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 0	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 27
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 63	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 44
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 72
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 63	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 44
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 72
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6518	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6518	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6518	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6518	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 0	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 27
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 0	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 27
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 0	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 27
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 24	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 40
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 63	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 44
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 72
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 29764x-32763 1 mips fmt 63	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 29764
+	Height = -32763
+	MipLevels = 1
+	ArraySize = 1
+	Format = 44
+	SampleDesc.Count = 8
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 72
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6655	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6655	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6655	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 62	
+2023/07/19 20:52:45.6655	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 39
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 72
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6814	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6814	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6814	engine/Assert	C:\build\_work\sbox\sbox\src\rendersystem\texturebase.cpp (93) : Assertion Failed in function AssertIsValidTextureSpec():
+bValid
+Invalid texture spec (ComputeTextureObject): 7441x-8190 1 mips fmt 24	
+2023/07/19 20:52:45.6814	engine/Engine	CreateTexture2D FAILED with E_INVALIDARG! bImmutable = false desc = 
+	Width = 7441
+	Height = -8190
+	MipLevels = 1
+	ArraySize = 1
+	Format = 9
+	SampleDesc.Count = 1
+	SampleDesc.Quality = 0
+	Usage = 0
+	BindFlags = 168
+	CPUAccessFlags = 0
+	MiscFlags = 0	
+2023/07/19 20:52:45.6814	engine/RenderSystem	ERROR! D3D call failed! hr = E_INVALIDARG ( D3D11Device()->CreateTexture2D( &desc, bImmutable ? pSubResource : nullptr, ( ID3D11Texture2D ** ) &pDx11Texture ) )	
+2023/07/19 20:52:45.6814	engine/RenderSystem	*** Run with -dx11debug to see native D3D errors!	
+2023/07/19 20:52:45.6814	Generic	EngineLoop::Exiting	
+2023/07/19 20:52:45.8781	engine/ToolFramework2	Shutting down Qt windows.............	
+2023/07/19 20:52:45.8781	engine/Engine	Source2Shutdown	
+2023/07/19 20:52:45.8781	engine/Engine	ShutdownSource2Logging	

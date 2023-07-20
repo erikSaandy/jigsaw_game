@@ -107,16 +107,13 @@ public partial class JigsawGame : BaseGameManager
 		Current.gameState?.ClientSpawned();
 	}
 
-	//public override void Spawn()
-	//{
-	//	base.Spawn();
-	//	Current.GameState?.ClientSpawn();
-	//}
-
 	public override void ClientDisconnect( IClient cl, NetworkDisconnectionReason reason )
 	{
 		base.ClientDisconnect( cl, reason );
 		Current.GameState?.ClientDisconnect( cl, reason );
+
+		ChatBox.SayInformation( cl.Name + " has left the game. (" + reason.ToString() + ")"  );
+
 	}
 
 
@@ -337,6 +334,7 @@ public partial class LoadingGameState : BaseGameState
 
 	public override void ClientJoined( IClient client )
 	{
+
 		base.ClientJoined( client );
 	}
 

@@ -28,7 +28,7 @@ public partial class JigsawManager
 	public virtual void DoPlayerDevCam( IClient client )
 	{
 		Game.AssertServer();
-		Log.Error( "yo" );
+
 		var camera = client.Components.Get<DevCamera>( true );
 
 		if ( camera == null )
