@@ -1,4 +1,5 @@
 ﻿using Sandbox;
+using System;
 
 namespace Jigsaw;
 
@@ -6,12 +7,11 @@ namespace Jigsaw;
 [Library( "weapon_fists", Title = "Fists" )]
 partial class Fists : Weapon
 {
-	public override string ViewModelPath => "models/first_person/first_person_arms.vmdl";
+	public override string ViewModelPath => "models/first_person/jigsaw_first_person_arms.vmdl";
 	public override string WorldModelPath => "";
 
 	public override float PrimaryAttackDelay => 0.9f;
 	public override float SecondaryAttackDelay => 0.9f;
-
 
 	public override bool CanReloadPrimary()
 	{
@@ -20,7 +20,7 @@ partial class Fists : Weapon
 
 	private void Attack( bool leftHand )
 	{
-		return; // no attack. lol
+		//return; // no attack. lol
 
 		if ( MeleeAttack() )
 		{
@@ -49,11 +49,58 @@ partial class Fists : Weapon
 		base.OnDrop(dropper);
 	}
 
+	public override void Simulate( IClient cl )
+	{
+		base.Simulate( cl );
+
+		JigsawPawn pawn = cl.Pawn as JigsawPawn;
+
+		if ( Input.StopProcessing || pawn.Inventory.ActiveChild?.GetType() != typeof( Fists ) )
+			return;
+
+		if ( Input.Pressed( "attack1" ) )
+		{
+
+			TraceResult tr = Trace.Ray( pawn.EyePosition, pawn.EyePosition + (pawn.EyeRotation.Forward * JigsawPawn.MaxHeldDistance) )
+				.UseHitboxes()
+				.WithTag( "puzzlepiece" )
+				.Ignore( this )
+				.Run();
+
+			if ( tr.Hit )
+			{
+				PuzzlePiece root = (tr.Entity as PuzzlePiece).GetRoot();
+				pawn.SetActivePiece( root, tr.HitPosition );
+				EnableTK();
+			}
+		}
+
+		// Throw piece
+		else if ( Input.Released( "attack1" ) )
+		{
+			if ( pawn.ActivePiece != null )
+			{
+				//DebugOverlay.Line( ActivePiece.Position, ActivePiece.Position + ActivePiece.Position - PositionOld, Color.Red, 10 );
+
+				//ActivePiece.PhysicsBody.Velocity = ( ActivePiece.Position - PositionOld ) * 20;
+				pawn.ClearActivePiece();
+				EnableTK(false);
+				return;
+			}
+		}
+
+	}
+
 	public override void SimulateAnimator( CitizenAnimationHelper anim )
 	{
 		anim.HoldType = CitizenAnimationHelper.HoldTypes.Punch;
 		anim.Handedness = CitizenAnimationHelper.Hand.Both;
 		anim.AimBodyWeight = 1.0f;
+	}
+
+	public void EnableTK(bool enable = true)
+	{
+		ViewModelEntity?.SetAnimParameter( "b_tk", enable );
 	}
 
 	public override void CreateViewModel()
@@ -72,11 +119,12 @@ partial class Fists : Weapon
 		};
 
 		ViewModelEntity.SetModel( ViewModelPath );
-		ViewModelEntity.SetAnimGraph( "models/first_person/first_person_arms_punching.vanmgrph" );
+		ViewModelEntity.SetAnimGraph( "models/first_person/jigsaw_first_person_arms_punching.vanmgrph" );
 	}
 
 	private bool MeleeAttack()
 	{
+
 		var ray = Owner.AimRay;
 
 		var forward = ray.Forward;

@@ -21,7 +21,7 @@ public partial class JigsawGame
 	public static readonly float PipScale = 0.35f;
 
 	private static readonly int PipPointCount = 24;
-	private static readonly int BodyPointCount = 12;
+	private static readonly int BodyPointCount = 32;
 
 	private static bool IsGenerated { get; set; } = false;
 
@@ -117,20 +117,20 @@ public partial class JigsawGame
 
 			// Edge data
 			new Vector2(
-				(x * PieceScale) + (GetWobbleAt( x, y ) * wobbleLeft),
-				(y * PieceScale) + (GetWobbleAt( x, y ) * wobbleBottom)
+				(x * PieceScale),
+				(y * PieceScale) 
 			),
 			new Vector2(
-				(x * PieceScale) + (GetWobbleAt( x, y + 1 ) * wobbleLeft),
-				(y * PieceScale) + PieceScale + (GetWobbleAt( x, y + 1 ) * wobbleTop)
+				(x * PieceScale) ,
+				(y * PieceScale) + PieceScale
 			),
 			new Vector2(
-				(x * PieceScale) + PieceScale + (GetWobbleAt( x + 1, y + 1 ) * wobbleRight),
-				(y * PieceScale) + PieceScale + (GetWobbleAt( x + 1, y + 1 ) * wobbleTop)
+				(x * PieceScale) + PieceScale,
+				(y * PieceScale) + PieceScale
 			),
 			new Vector2(
-				(x * PieceScale) + PieceScale + (GetWobbleAt( x + 1, y ) * wobbleRight),
-				(y * PieceScale) + (GetWobbleAt( x + 1, y ) * wobbleBottom)
+				(x * PieceScale) + PieceScale,
+				(y * PieceScale)
 			),
 
 			wobbleLeft == 0,
@@ -171,21 +171,29 @@ public partial class JigsawGame
 
         int sidePointCount = BodyPointCount / 4;
 
-        for (int i = 0; i < 4; i++) {
-            piece.contourSideStartID[i] = piece.polygon.contour.Count;
+        for (int sideId = 0; sideId < 4; sideId++) {
+            piece.contourSideStartID[sideId] = piece.polygon.contour.Count;
 
-            Math2d.Line side = piece.GetSide(i);
-            Vector2 sideDir = piece.GetSideNormal(i);
-            bool needsPip = !piece.SideIsOnEdge(i); //  needs pip if side isn't on edge.
+            Math2d.Line side = piece.GetSide(sideId);
+
+
+			Vector2 pointA = GetWobblePositionAt( side.pointA );
+			Vector2 pointB = GetWobblePositionAt( side.pointB );
+			// Switch points if adjacent side is on the edge. Don't use wobble.
+			if ( piece.SideIsOnEdge( Math2d.ClampListIndex( sideId - 1, 4 ) ) ) { pointA = side.pointA; Log.Error( "yo" ); }
+			if ( piece.SideIsOnEdge( Math2d.ClampListIndex( sideId + 1, 4 ) ) ) { pointB = side.pointB; Log.Error( "ho" ); }
+
+			Vector2 sideDir = piece.GetSideNormal(sideId);
+            bool needsPip = !piece.SideIsOnEdge(sideId); //  needs pip if side isn't on edge.
 
 			// SIDE NEIGHBORS OTHER PIECE. Is piece generated yet?
 			if (needsPip && PieceMeshData[piece.x + (int)sideDir.x, piece.y + (int)sideDir.y] != null) {
 
 				PieceMeshData neighbor = PieceMeshData[piece.x + (int)sideDir.x, piece.y + (int)sideDir.y];
-                int neighborSideID = Math2d.ClampListIndex(i + 2, 4);
+                int neighborSideID = Math2d.ClampListIndex(sideId + 2, 4);
                 int sideStartId = PieceMeshData[(int)neighbor.x, (int)neighbor.y].contourSideStartID[neighborSideID] + 1;
 
-                neighborSideID = Math2d.ClampListIndex(i + 3, 4);
+                neighborSideID = Math2d.ClampListIndex(sideId + 3, 4);
                 int sideEndId = Math2d.ClampListIndex(PieceMeshData[(int)neighbor.x, (int)neighbor.y].contourSideStartID[neighborSideID] - 1, neighbor.polygon.contour.Count);            
 
                 int sideLength = sideEndId - sideStartId + 1;
@@ -193,44 +201,152 @@ public partial class JigsawGame
                 List<Vector2> sidePoints = neighbor.polygon.contour.points.GetRange(sideStartId, sideLength);
                 sidePoints.Reverse();
 
-                piece.polygon.contour.points.Add(side.pointA);
+				piece.polygon.contour.points.Add( pointA );
 				piece.polygon.contour.points.AddRange(sidePoints);
+				piece.polygon.contour.points.Add( pointB );
+				//piece.polygon.contour.points.Add( GetWobblePositionAt(side.pointB) );
 
-            }
-            else {
+			}
+            else { // GENERATE SIDE
 
-                float step = side.Magnitude / sidePointCount;
+				float step = side.Magnitude / sidePointCount;
 
-                float j = 0;
+                float j = 0f;
                 float pipStart = 0.4f * PieceScale;
                 float pipEnd = 0.6f * PieceScale;
 
-                do {
+				#region new
 
-                    if ( needsPip && j + step >= pipStart ) {
-                        AddPipPoints(ref piece, i, pipStart, pipEnd);
+				Color c = Color.Random;
 
-                        j = pipEnd + 0.1f;
-                        needsPip = false;
-                    }
+				Vector2 tangentA, tangentB;
 
-                    bool wobbleX = (!piece.SideIsOnEdge(0) && i == 0) && (!piece.SideIsOnEdge(2) && i == 2);
-                    bool wobbleY = (!piece.SideIsOnEdge(1) && i == 1) && (!piece.SideIsOnEdge(3) && i == 3);
+				// Get tangent of wobble at corners of piece
+				if ( sideId == 0 ) // left
+				{
+					tangentA = GetWobbleVerticalTangent( piece.x, piece.y );
+					tangentB = -GetWobbleVerticalTangent( piece.x, piece.y + 1 );
+				}
+				else if ( sideId == 1 ) // top
+				{
+					tangentA = GetWobbleHorizontalTangent( piece.x, piece.y + 1 );
+					tangentB = -GetWobbleHorizontalTangent( piece.x + 1, piece.y + 1 );
+				}
+				else if ( sideId == 2 ) // right
+				{
+					tangentA = -GetWobbleVerticalTangent( piece.x + 1, piece.y + 1 );
+					tangentB = GetWobbleVerticalTangent( piece.x + 1, piece.y );
+				}
+				else // bottom
+				{
+					tangentA = -GetWobbleHorizontalTangent( piece.x + 1, piece.y );
+					tangentB = GetWobbleHorizontalTangent( piece.x, piece.y );
+				}
 
-                    Vector2 p = GetWobblePositionAt(side.pointA + (side.Direction * j), wobbleX, wobbleY);
-                    //Math2d.DrawPoint(p, Color.White, 120, 1f);
+				bool wobble = true;
+				if ( piece.SideIsOnEdge( sideId ) ) { wobble = false; }
 
-                    piece.polygon.contour.Add(p);
-                    j += step;
+				do
+				{
 
-                } while (j < side.Magnitude);
+					if ( needsPip && j + step >= pipStart )
+					{
+						Vector2 start = GetPointAlongCurve( pipStart / side.Magnitude );
+						Vector2 end = GetPointAlongCurve( pipEnd / side.Magnitude );
+						AddPipPoints( ref piece, sideId, start, end );
 
-            }
+						j = pipEnd + 0.1f;
+						needsPip = false;
+					}
 
-        }
+					Vector2 p = Vector2.Zero;
+
+					if ( wobble ) { p = GetPointAlongCurve( j / side.Magnitude ); }
+					else { p = side.pointA + (side.Direction * j); }
+
+					//if ( Game.IsClient && wobble ) Math2d.DrawPoint( p, c, 35, 1f );
+					//if ( Game.IsClient && !wobble ) Math2d.DrawPoint( p, Color.White, 35, 2f );
+
+					piece.polygon.contour.Add( p );
+
+					j += step;
+
+				} while ( j < side.Magnitude);
+
+				Vector2 GetPointAlongCurve(float t)
+				{
+
+					Vector2 a = pointA;
+					Vector2 b = pointA + tangentA;
+					Vector2 c = pointB + tangentB;
+					Vector2 d = pointB;
+
+					if ( Game.IsClient )
+					{
+						Color col = Color.Random;
+
+						switch ( sideId )
+						{
+							case 0:
+								col = Color.Red;
+								break;
+							case 1:
+								col = Color.Green;
+								break;
+							case 2:
+								col = Color.Blue;
+								break;
+							case 3:
+								col = Color.Yellow;
+								break;
+						}
+
+						DebugOverlay.Line( a, pointA + tangentA * 9, col, 35 );
+						DebugOverlay.Line( pointB + tangentB * 9, d, col, 35 );
+					}
+
+					//return Math2d.CubicCurve( a, a + Vector2.Left * 0.2f, d + Vector2.Left * 0.2f, d, t );
+					return Math2d.QuadraticCurve( pointA, pointA + (side.Direction * side.Magnitude / 2), pointB, t );
+
+					//return Math2d.QuadraticCurve( pointA, pointA + (side.Direction * side.Magnitude / 2), pointB, t );
+				}
+
+				#endregion
+
+				/* old 
+
+				bool wobbleX = true;
+				if ( (piece.SideIsOnEdge( 0 ) && i == 0) || (piece.SideIsOnEdge( 2 ) && i == 2) ) { wobbleX = false; }
+
+				bool wobbleY = true;
+				if ( (piece.SideIsOnEdge( 1 ) && i == 1) || (piece.SideIsOnEdge( 3 ) && i == 3) ) { wobbleY = false; }
+
+				do
+				{
+
+					if ( needsPip && j + step >= pipStart )
+					{
+						AddPipPoints( ref piece, i, pipStart, pipEnd );
+
+						j = pipEnd + 0.1f;
+						needsPip = false;
+					}
+
+					Vector2 p = GetWobblePositionAt( side.pointA + (side.Direction * j), false, false );
+					Math2d.DrawPoint( p, Color.White, 120, 1f );
+
+					piece.polygon.contour.Add( p );
+					j += step;
+
+				} while ( j < side.Magnitude );
+
+				*/
+			}
+
+		}
     }
 
-    private void AddPipPoints(ref PieceMeshData piece, int sideIndex, float start, float end) {
+    private void AddPipPoints(ref PieceMeshData piece, int sideIndex, Vector2 start, Vector2 end) {
         Vector2 a, b, c, d;
 
         Vector2 up = Vector2.Zero;
@@ -256,9 +372,9 @@ public partial class JigsawGame
         Math2d.Line side = piece.GetSide(sideIndex);
 
 		// Cublic curve for pips.
-        a = side.pointA + (side.Direction * start);
+        a = start;
         b = a + (up * PipScale) + (left * PipScale);
-        d = side.pointA + (side.Direction * end);
+        d = end;
         c = d + (up * PipScale) + (right * PipScale);
 
         int pointCount = PipPointCount;
@@ -266,14 +382,32 @@ public partial class JigsawGame
             float t = ((i) / (float)pointCount);
             Vector2 p = Math2d.CubicCurve(a, b, c, d, t);
             piece.polygon.contour.Add(p);
-			//Math2d.DrawPoint( p, Color.Red, 120, 1f );
+			Math2d.DrawPoint( p, Color.Red, 35, 1f );
 		}
 
 		piece.pipCenters[sideIndex] = ((a + b + c + d) / 4) - (new Vector2(piece.x, piece.y) * PieceScale) - (Vector2.One * (PieceScale/2));
 
 	}
 
-    public static Vector2 GetWobblePositionAt(Vector2 position, bool wobbleX = true, bool wobbleY = true) {
+	public static Vector2 GetWobbleHorizontalTangent(float x, float y)
+	{
+		Vector2 dir = Vector2.Right;
+		Vector2 pos = new Vector2( x, y );
+		Vector2 a = GetWobblePositionAt( pos - dir * 0.2f );
+		Vector2 b = GetWobblePositionAt( pos + dir * 0.2f );
+		return (b - a).Normal;
+	}
+
+	public static Vector2 GetWobbleVerticalTangent( float x, float y )
+	{
+		Vector2 dir = Vector2.Up;
+		Vector2 pos = new Vector2( x, y );
+		Vector2 a = GetWobblePositionAt( pos - dir * 0.2f );
+		Vector2 b = GetWobblePositionAt( pos + dir * 0.2f );
+		return (b - a).Normal;
+	}
+
+	public static Vector2 GetWobblePositionAt(Vector2 position, bool wobbleX = true, bool wobbleY = true) {
         return GetWobblePositionAt(position.x, position.y, wobbleX, wobbleY);
     }
 
@@ -287,9 +421,16 @@ public partial class JigsawGame
     }
 
     public static float GetWobbleAt(float x, float y) {
-		float scale = wobbleAmount * 64;
-		return (Noise.Perlin( x * 0.1f, y * 0.1f, 0 ) * scale) - (scale/2);
-    }
+
+		//float scale = wobbleAmount * 64;
+		//float mx = (1f / Current.PieceCountX) * x * Current.PieceCountX;
+		//float my = (1f / Current.PieceCountY) * y * Current.PieceCountY;
+		//return (Noise.Perlin( mx, my, 0 ) * scale) - (scale / 2);
+
+		float v = (MathF.Sin( x / Current.PieceCountX * 1.5f ) * 1.5f) + (MathF.Sin( y / Current.PieceCountY * 1.5f ) * 1.5f);
+		return v + 0.3f;
+
+	}
 
 }
 
@@ -318,6 +459,13 @@ public partial class PieceMeshData {
 
         corners = new Vector2[4] { bl, tl, tr, br };
 		straightSides = new Math2d.Line[4] { new Math2d.Line(bl, tl), new Math2d.Line(tl, tr), new Math2d.Line(tr, br), new Math2d.Line(br, bl) };
+		Color c = Color.Random;
+
+		DebugOverlay.Line( bl, tl, c, 50 );
+		DebugOverlay.Line( tl, tr, c, 50 );
+		DebugOverlay.Line( tr, br, c, 50 );
+		DebugOverlay.Line( br, bl, c, 50 );
+
 		isEdge = new bool[4] { edgeLeft, edgeTop, edgeRight, edgeBottom };
         center.Set((corners[0].x + corners[3].x) / 2, (corners[1].y + corners[0].y) / 2);
 
@@ -348,7 +496,11 @@ public partial class PieceMeshData {
 
     // left, top, right, bottom
     public Math2d.Line GetSide(int index) { return straightSides[index]; }
-    public bool SideIsOnEdge(int side) { return isEdge[side]; }
+    public bool SideIsOnEdge(int side) { 
+		if ( side < 0 || side >= 4 ) { return false; } // outside array
+
+		return isEdge[side]; 
+	}
 
 }
 

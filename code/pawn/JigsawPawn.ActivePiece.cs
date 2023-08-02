@@ -30,12 +30,10 @@ public partial class JigsawPawn : AnimatedEntity
 
 	[Predicted] Particles HoldSplashParticle { get; set; }
 
-	private readonly int MaxHeldDistance = 128;
+	public static readonly int MaxHeldDistance = 128;
 
 	public void SimulateActivePiece( IClient cl )
 	{
-
-		ActivePieceInput();
 
 		if ( ActivePiece == null ) return;
 
@@ -315,45 +313,7 @@ public partial class JigsawPawn : AnimatedEntity
 		}
 	}
 
-	private void ActivePieceInput()
-	{
-
-		if ( Input.StopProcessing || Inventory.ActiveChild?.GetType() != typeof (Fists) )
-			return;
-
-		if ( Input.Pressed( "attack1" ))
-		{
-			
-			TraceResult tr = Trace.Ray(EyePosition, EyePosition + (EyeRotation.Forward * MaxHeldDistance) )
-				.UseHitboxes()
-				.WithTag("puzzlepiece")
-				.Ignore(this)
-				.Run();
-
-			if (tr.Hit)
-			{
-				PuzzlePiece root = (tr.Entity as PuzzlePiece).GetRoot();
-				SetActivePiece( root, tr.HitPosition );
-			}
-		}
-
-		// Throw piece
-		else if(Input.Released("attack1"))
-		{
-			if ( ActivePiece != null )
-			{
-				//DebugOverlay.Line( ActivePiece.Position, ActivePiece.Position + ActivePiece.Position - PositionOld, Color.Red, 10 );
-
-				//ActivePiece.PhysicsBody.Velocity = ( ActivePiece.Position - PositionOld ) * 20;
-				ClearActivePiece();
-				return;
-			}
-		}
-
-	}
-
-
-	private void SetActivePiece( PuzzlePiece piece, Vector3 hitPosition )
+	public void SetActivePiece( PuzzlePiece piece, Vector3 hitPosition )
 	{
 
 		piece.Owner = this;
