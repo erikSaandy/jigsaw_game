@@ -89,8 +89,6 @@ public partial class PuzzlePiece : ModelEntity
 		Name = "PuzzlePiece" + " (" + X + ", " + Y + ")"; 
 		
 		// Generate
-		//SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
-
 
 		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
@@ -109,15 +107,37 @@ public partial class PuzzlePiece : ModelEntity
 	public void GenerateClient()
 	{
 		Model = JigsawGame.Current.PieceModels?[Index];
-		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
+
+		GetBoundingBox( X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
+
 		//GeneratePipCollision();
 	}
 
-	public static void GetBoundingBox(int X, int Y, out Vector3 mins, out Vector3 maxs)
+	public static void GetBoundingBox( int X, int Y, out Vector3 mins, out Vector3 maxs )
 	{
 		// TODO: Edge pieces are inaccurate, and pips are not accounted for.
 
+		Vector2 negate = new Vector2( (0.5f + X) * JigsawGame.PieceScale, (0.5f + Y) * JigsawGame.PieceScale );
+
+		PieceMeshData data = JigsawGame.PieceMeshData[X, Y];
+		Vector2 bl = data.polygon.contour.points[data.contourSideStartID[0]] - negate;
+		Vector2 tl = data.polygon.contour.points[data.contourSideStartID[1]] - negate;
+		Vector2 tr = data.polygon.contour.points[data.contourSideStartID[2]] - negate;
+		Vector2 br = data.polygon.contour.points[data.contourSideStartID[3]] - negate;
+
+		// Might look like I want to use Min here too, but only using Max produces hitboxes that fit together better.
+		float left = Math.Max( bl.x, tl.x );
+		float top = Math.Max( tl.y, tr.y );
+		float right = Math.Max( tr.x, br.x );
+		float bottom = Math.Max( bl.y, br.y );
+
+		mins = new Vector3( left, bottom, -(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2) );
+		maxs = new Vector3( right, top, (JigsawGame.PieceScale * JigsawGame.PieceThickness / 2) );
+		Log.Error( "mins: ( " + mins.x + ", " + mins.y + " ), maxs: ( " + maxs.x + ", " + maxs.y + " )" );
+
+		/* OLD
+		 
 		float wMin = JigsawGame.GetWobbleAt( X * JigsawGame.PieceScale, Y * JigsawGame.PieceScale );
 		float wMax = JigsawGame.GetWobbleAt( (X+1) * JigsawGame.PieceScale, (Y+1) * JigsawGame.PieceScale );
 
@@ -132,11 +152,14 @@ public partial class PuzzlePiece : ModelEntity
 			(JigsawGame.PieceScale/2) + ((Y == JigsawGame.Current.PieceCountY - 1) ? 0 : wMax),
 			(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2)
 		);
+
+		*/
+
 	}
 
 	private void GeneratePipCollision()
 	{
-		foreach ( Vector2 c in JigsawGame.Current.PieceMeshData[X, Y].pipCenters )
+		foreach ( Vector2 c in JigsawGame.PieceMeshData[X, Y].pipCenters )
 		{
 			if ( c != Vector2.Zero )
 			{
@@ -330,7 +353,7 @@ public partial class PuzzlePiece : ModelEntity
 		int transmit = (Convert.ToInt32( enable ) - 1) * -1;
 		//Log.Error( transmit );
 		Transmit = (TransmitType)transmit;
-
+		PhysicsBody.AutoSleep = enable;
 
 		//UsePhysicsCollision = enable;
 		//EnableAllCollisions = enable;

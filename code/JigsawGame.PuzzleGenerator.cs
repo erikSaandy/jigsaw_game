@@ -29,7 +29,7 @@ public partial class JigsawGame
 	[Net] public int PieceCountY { get; set; } = 0;
 
 	public static readonly float wobbleAmount = 0.15f;
-	public PieceMeshData[,] PieceMeshData { get; set; }
+	public static PieceMeshData[,] PieceMeshData { get; set; }
 
 	public int divisionLevel = 1;
 
@@ -180,8 +180,8 @@ public partial class JigsawGame
 			Vector2 pointA = GetWobblePositionAt( side.pointA );
 			Vector2 pointB = GetWobblePositionAt( side.pointB );
 			// Switch points if adjacent side is on the edge. Don't use wobble.
-			if ( piece.SideIsOnEdge( Math2d.ClampListIndex( sideId - 1, 4 ) ) ) { pointA = side.pointA; Log.Error( "yo" ); }
-			if ( piece.SideIsOnEdge( Math2d.ClampListIndex( sideId + 1, 4 ) ) ) { pointB = side.pointB; Log.Error( "ho" ); }
+			if ( piece.SideIsOnEdge( Math2d.ClampListIndex( sideId - 1, 4 ) ) ) { pointA = side.pointA; }
+			if ( piece.SideIsOnEdge( Math2d.ClampListIndex( sideId + 1, 4 ) ) ) { pointB = side.pointB; }
 
 			Vector2 sideDir = piece.GetSideNormal(sideId);
             bool needsPip = !piece.SideIsOnEdge(sideId); //  needs pip if side isn't on edge.
@@ -301,8 +301,8 @@ public partial class JigsawGame
 								break;
 						}
 
-						DebugOverlay.Line( a, pointA + tangentA * 9, col, 35 );
-						DebugOverlay.Line( pointB + tangentB * 9, d, col, 35 );
+						//DebugOverlay.Line( a, pointA + tangentA * 9, col, 35 );
+						//DebugOverlay.Line( pointB + tangentB * 9, d, col, 35 );
 					}
 
 					//return Math2d.CubicCurve( a, a + Vector2.Left * 0.2f, d + Vector2.Left * 0.2f, d, t );
@@ -382,7 +382,7 @@ public partial class JigsawGame
             float t = ((i) / (float)pointCount);
             Vector2 p = Math2d.CubicCurve(a, b, c, d, t);
             piece.polygon.contour.Add(p);
-			Math2d.DrawPoint( p, Color.Red, 35, 1f );
+			//Math2d.DrawPoint( p, Color.Red, 35, 1f );
 		}
 
 		piece.pipCenters[sideIndex] = ((a + b + c + d) / 4) - (new Vector2(piece.x, piece.y) * PieceScale) - (Vector2.One * (PieceScale/2));
@@ -461,10 +461,10 @@ public partial class PieceMeshData {
 		straightSides = new Math2d.Line[4] { new Math2d.Line(bl, tl), new Math2d.Line(tl, tr), new Math2d.Line(tr, br), new Math2d.Line(br, bl) };
 		Color c = Color.Random;
 
-		DebugOverlay.Line( bl, tl, c, 50 );
-		DebugOverlay.Line( tl, tr, c, 50 );
-		DebugOverlay.Line( tr, br, c, 50 );
-		DebugOverlay.Line( br, bl, c, 50 );
+		//DebugOverlay.Line( bl, tl, c, 50 );
+		//DebugOverlay.Line( tl, tr, c, 50 );
+		//DebugOverlay.Line( tr, br, c, 50 );
+		//DebugOverlay.Line( br, bl, c, 50 );
 
 		isEdge = new bool[4] { edgeLeft, edgeTop, edgeRight, edgeBottom };
         center.Set((corners[0].x + corners[3].x) / 2, (corners[1].y + corners[0].y) / 2);
