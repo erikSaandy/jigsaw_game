@@ -1,10 +1,9 @@
-﻿using Sandbox;
+﻿using Saandy;
+using Sandbox;
 using System;
 
 namespace Jigsaw;
 
-[Spawnable]
-[Library( "weapon_fists", Title = "Fists" )]
 partial class Fists : Weapon
 {
 	public override string ViewModelPath => "models/first_person/jigsaw_first_person_arms.vmdl";
@@ -12,6 +11,8 @@ partial class Fists : Weapon
 
 	public override float PrimaryAttackDelay => 0.9f;
 	public override float SecondaryAttackDelay => 0.9f;
+
+	bool TKActive = false;
 
 	public override bool CanReloadPrimary()
 	{
@@ -51,12 +52,12 @@ partial class Fists : Weapon
 
 	public override void Simulate( IClient cl )
 	{
-		base.Simulate( cl );
+		if ( Owner is not JigsawPawn ) return;
+		if ( Input.StopProcessing ) return;
 
-		JigsawPawn pawn = cl.Pawn as JigsawPawn;
+		JigsawPawn pawn = Owner as JigsawPawn;
 
-		if ( Input.StopProcessing || pawn.Inventory.ActiveChild?.GetType() != typeof( Fists ) )
-			return;
+		// TK
 
 		if ( Input.Pressed( "attack1" ) )
 		{
@@ -70,25 +71,27 @@ partial class Fists : Weapon
 			if ( tr.Hit )
 			{
 				PuzzlePiece root = (tr.Entity as PuzzlePiece).GetRoot();
-				pawn.SetActivePiece( root, tr.HitPosition );
+				PieceManager.SetActivePiece( cl, root, tr.HitPosition );
 				EnableTK();
 			}
 		}
-
-		// Throw piece
-		else if ( Input.Released( "attack1" ) )
+		else if ( TKActive && Input.Down( "attack1" ) )
 		{
-			if ( pawn.ActivePiece != null )
-			{
-				//DebugOverlay.Line( ActivePiece.Position, ActivePiece.Position + ActivePiece.Position - PositionOld, Color.Red, 10 );
-
-				//ActivePiece.PhysicsBody.Velocity = ( ActivePiece.Position - PositionOld ) * 20;
-				pawn.ClearActivePiece();
-				EnableTK(false);
-				return;
-			}
+			SimulateTK( cl );
+		}
+		else
+		{
+			PieceManager.ClearActivePiece( cl );
+			EnableTK( false );
 		}
 
+		base.Simulate( cl );
+
+	}
+
+	public override bool CanPrimaryAttack()
+	{
+		return (Automatic ? Input.Down( "Attack1" ) : Input.Pressed( "Attack1" )) && TimeSincePrimaryAttack >= PrimaryAttackDelay && !TKActive;
 	}
 
 	public override void SimulateAnimator( CitizenAnimationHelper anim )
@@ -101,6 +104,7 @@ partial class Fists : Weapon
 	public void EnableTK(bool enable = true)
 	{
 		ViewModelEntity?.SetAnimParameter( "b_tk", enable );
+		TKActive = enable;
 	}
 
 	public override void CreateViewModel()

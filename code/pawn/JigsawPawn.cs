@@ -239,7 +239,7 @@ public partial class JigsawPawn : AnimatedEntity
 			if ( i.Enabled ) i.Simulate( cl );
 		}
 
-		SimulateActivePiece( cl );
+		//SimulateActivePiece( cl );
 
 	}
 

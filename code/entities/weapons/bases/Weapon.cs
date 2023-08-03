@@ -17,8 +17,8 @@ public partial class Weapon : Carriable
 	public virtual bool Automatic => false;
 	[Net] public int PrimaryAmmo { get; set; } = 0;
 	[Net] public int SecondaryAmmo { get; set; } = 0;
-	bool IsPrimaryReloading => TimeSincePrimaryReload < PrimaryReloadDelay;
-	bool IsSecondaryReloading => TimeSinceSecondaryReload < SecondaryReloadDelay;
+	protected bool IsPrimaryReloading => TimeSincePrimaryReload < PrimaryReloadDelay;
+	protected bool IsSecondaryReloading => TimeSinceSecondaryReload < SecondaryReloadDelay;
 	public override void Spawn()
 	{
 		base.Spawn();
