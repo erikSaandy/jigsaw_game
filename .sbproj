@@ -81,8 +81,7 @@
         },
         {
           "a": "water",
-          "b": "puzzlepiece",
-          "r": "Collide"
+          "b": "puzzlepiece"
         },
         {
           "a": "puzzlepiece",

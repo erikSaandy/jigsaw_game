@@ -316,8 +316,6 @@ public partial class LoadingGameState : BaseGameState
 	{
 		WriteConsole( "Loading" );
 
-		// NOTE: Game.IsClient doesn't work here. I guess server takes priority, and clients doesn't have a chance.
-
 		if ( Game.IsServer )
 		{
 			LeaderInfo.Enable( To.Everyone, false );
@@ -365,6 +363,14 @@ public partial class PuzzlingGameState : BaseGameState
 		if ( Game.IsServer )
 		{
 			ChatBox.SayInformation( "This puzzle consists of " + (JigsawGame.Current.PieceCountX * JigsawGame.Current.PieceCountY) + " puzzle pieces! \rEnjoy." );
+
+			foreach ( PuzzlePiece p in JigsawGame.Current.PieceEntities )
+			{
+				p.PhysicsEnabled = true;
+			}
+
+			JigsawGame.Current.PositionPuzzlePiecesOnNavMesh();
+
 		}
 
 	}

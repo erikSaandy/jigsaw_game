@@ -12,7 +12,7 @@ public partial class JigsawGame
 {
 
 	// All PuzzlePiece entities (NETWORKED)
-	[Net, Predicted] public IList<PuzzlePiece> PieceEntities { get; set; } = null;
+	[Net] public IList<PuzzlePiece> PieceEntities { get; set; }
 
 	public PuzzlePiece GetPieceEntity(int x, int y)
 	{
@@ -55,35 +55,32 @@ public partial class JigsawGame
 
 		Log.Info( "Puzzle dimensions: " + PieceCountX + ", " + PieceCountY );
 		Log.Info( "Puzzle piece count: " + PieceCountX * PieceCountY );
-			
+
 		// Spawning entity pieces //
 		//SpawnPuzzlePiecesOnNavMesh();
 		SpawnPuzzlePieces();
-		await PositionPuzzlePiecesOnNavMesh();
 
-		//await Task.Delay( 10000 );
-
-		foreach ( PuzzlePiece p in JigsawGame.Current.PieceEntities )
-		{
-			p.PhysicsEnabled = true;
-		}
+		await Task.Delay( 1000 );
 
 		GameState = new PuzzlingGameState();
 
 	}
 
+
+	public void PositionPuzzlePiecesOnNavMesh() { Task.RunInThreadAsync( () => PositionPuzzlePiecesOnNavMeshAsync() ); }
+
 	/// <summary>
 	/// place puzzle pieces on the nav mesh.
 	/// </summary>
-	public async Task PositionPuzzlePiecesOnNavMesh()
+	private async Task PositionPuzzlePiecesOnNavMeshAsync()
 	{
 		// Only do this on server.
 		if ( Game.IsClient ) return;
-		if ( Current.PieceEntities == null ) return;
+		if ( PieceEntities == null ) return;
 
 		int count = PieceCountX * PieceCountY;
 
-		foreach(PuzzlePiece p in Current.PieceEntities)
+		foreach(PuzzlePiece p in PieceEntities )
 		{
 			p.EnableDrawing = false;
 		}
@@ -102,7 +99,7 @@ public partial class JigsawGame
 
 			// Get random nav area
 			a = areas.OrderBy( ( x ) => Guid.NewGuid() ).FirstOrDefault();
-			Vector3 pos = a.FindRandomConnectedPoint( center, NavAgentHull.Agent1, 4096 );
+			Vector3 pos = a.FindRandomConnectedPoint( center, NavAgentHull.Agent1, 4096, 64 );
 
 			try
 			{
@@ -136,15 +133,16 @@ public partial class JigsawGame
 
 			void PlacePiece( Vector3 p )
 			{
-				Current.PieceEntities[i].Position = p;
-				Current.PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+				PieceEntities[i].Position = NavMesh.GetClosestPoint(p).Value + Vector3.Up * 4;
+				PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
 			}
 
 		}
 
-		foreach ( PuzzlePiece p in Current.PieceEntities )
+		foreach ( PuzzlePiece p in PieceEntities )
 		{
 			p.EnableDrawing = true;
+			p.PhysicsBody.AutoSleep = false;
 		}
 
 	}
@@ -154,26 +152,25 @@ public partial class JigsawGame
 		// Only do this on server.
 		if ( Game.IsClient ) return;
 
-		using ( Prediction.Off() )
+		DeletePieceEntities();
+		int count = PieceCountX * PieceCountY;
+
+		PieceEntities = new List<PuzzlePiece>();
+		for ( int i = 0; i < count; i++ )
 		{
-			DeletePieceEntities();
-			int count = PieceCountX * PieceCountY;
-			Current.PieceEntities = new PuzzlePiece[count];
-			for ( int i = 0; i < count; i++ )
-			{
-				// Get x and y of piece.
-				Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y );
-				// Generate piece.
-				PuzzlePiece ent = new PuzzlePiece( x, y );
+			// Get x and y of piece.
+			Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y );
+			// Generate piece.
+			PuzzlePiece ent = new PuzzlePiece( x, y );
 
-				Current.PieceEntities[i] = ent;
+			PieceEntities.Add( ent );
+			ent.PhysicsBody.AutoSleep = false;
 
-				// Place piece //
-				Vector3 spawnArea = new Vector2( PieceCountX * (PieceScale + spacing), PieceCountY * (PieceScale + spacing) );
-				Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 ) - (spawnArea / 2);
-				//ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Down * 512);
-				ent.Position = NavMesh.GetNavAreas().FirstOrDefault().Center + Vector3.Up * 4;
-			}
+			// Place piece //
+			Vector3 spawnArea = new Vector2( PieceCountX * (PieceScale + spacing), PieceCountY * (PieceScale + spacing) );
+			Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 ) - (spawnArea / 2);
+			//ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Down * 512);
+			ent.Position = NavMesh.GetNavAreas().FirstOrDefault().Center + Vector3.Up * 4;
 		}
 	}
 
@@ -208,22 +205,21 @@ public partial class JigsawGame
 	public void LoadClientPieces()
 	{
 		Log.Info( "Loading client puzzle pieces..." );
-
+		
 		// Load materials.
 		//await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
-		LoadPuzzleMaterials();
+		Current.Task.RunInThreadAsync(() => Current.LoadPuzzleMaterials());
 
 		// Generate meshes.
 		//await Task.RunInThreadAsync( () => GeneratePuzzle() );
-		GeneratePuzzle();
+		Current.GeneratePuzzle();
 
-		for ( int i = 0; i < Current.PieceEntities.Count; i++ ) 
+		for ( int i = 0; i < Current.PieceEntities.Count; i++ )
 		{
 			Current.PieceEntities[i].GenerateClient();
 		}
 
 		Log.Info( "Loaded puzzle meshes on client!" );
-
 	}
 
 	private void OnPuzzleTextureLoadFailed()
@@ -234,9 +230,9 @@ public partial class JigsawGame
 	/// <summary>
 	/// Load material on the client.
 	/// </summary>
-	public void LoadPuzzleMaterials()
+	public async Task LoadPuzzleMaterials()
 	{
-		PuzzleTexture = Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) ).Result;
+		PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
 		//PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
 
 		// Only load backside mat if it hasn't been loaded on client yet.

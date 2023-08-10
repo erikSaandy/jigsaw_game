@@ -81,6 +81,8 @@ public partial class PuzzlePiece : ModelEntity
 
 	public PuzzlePiece() : base() {  }
 
+
+
 	public PuzzlePiece( int x, int y ) : base()
 	{
 		this.X = x;
@@ -103,11 +105,13 @@ public partial class PuzzlePiece : ModelEntity
 		EnableSolidCollisions = true;
 		EnableTraceAndQueries = true;
 
+		Transmit = TransmitType.Always;
+
 	}
 
 	public void GenerateClient()
 	{
-		Model = JigsawGame.Current.PieceModels?[Index];
+		Model = JigsawGame.Current.PieceModels[Index];
 
 		GetBoundingBox( X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
