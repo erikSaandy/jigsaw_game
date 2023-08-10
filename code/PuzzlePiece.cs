@@ -72,7 +72,8 @@ public partial class PuzzlePiece : ModelEntity
 	{
 		base.Spawn();
 		ChatBox.SayInformation( "I found this in the abyss...\rI'll leave it in the center of the map! 😮‍💨" );
-		Position = (Vector3.Up * 64);
+
+		Position = NavMesh.GetNavAreas().FirstOrDefault().Center + Vector3.Up * 4;
 		Random r = new Random();
 		Rotation = new Rotation( 0, 0, 180, r.Next( 0, 360 ) );
 		Velocity = Vector3.Zero;

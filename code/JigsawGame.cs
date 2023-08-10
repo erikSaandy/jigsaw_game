@@ -350,7 +350,6 @@ public partial class LoadingGameState : BaseGameState
 
 		if ( Game.IsServer )
 		{
-			JigsawGame.Current.PositionPuzzlePiecesOnNavMesh();
 		}
 
 	}
@@ -366,11 +365,6 @@ public partial class PuzzlingGameState : BaseGameState
 		if ( Game.IsServer )
 		{
 			ChatBox.SayInformation( "This puzzle consists of " + (JigsawGame.Current.PieceCountX * JigsawGame.Current.PieceCountY) + " puzzle pieces! \rEnjoy." );
-
-			foreach(PuzzlePiece p in JigsawGame.Current.PieceEntities)
-			{
-				p.PhysicsEnabled = true;
-			}
 		}
 
 	}

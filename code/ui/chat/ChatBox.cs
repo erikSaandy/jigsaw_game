@@ -155,6 +155,14 @@ namespace Jigsaw
 			AddChatEntry( To.Everyone, "", message, avatar );
 		}
 
+		[ConCmd.Server( "say_warning" )]
+		public static void SayWarning( string message )
+		{
+			string avatar = "icons/warning.png";
+			AddChatEntry( To.Everyone, "", message, avatar );
+		}
+
+
 		[ConCmd.Server( "say_information_to" )]
 		public static void SayInformation( To to, string message )
 		{

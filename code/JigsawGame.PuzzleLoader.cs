@@ -39,6 +39,13 @@ public partial class JigsawGame
 	{
 		if ( Game.IsClient ) return;
 
+		if ( !NavMesh.IsLoaded )
+		{
+			ChatBox.SayWarning( "This map doesn't have a NavMesh! This gamemode needs a NavMesh to work." );
+			ChatBox.SayWarning( "Contact the map maker or pick another map." );
+			return;
+		}
+
 		// Load texture on server.
 		PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
 
@@ -51,9 +58,15 @@ public partial class JigsawGame
 			
 		// Spawning entity pieces //
 		//SpawnPuzzlePiecesOnNavMesh();
-		SpawnPuzzlePiecesInGrid();
+		SpawnPuzzlePieces();
+		await PositionPuzzlePiecesOnNavMesh();
 
-		await Task.Delay( 3000 );
+		//await Task.Delay( 10000 );
+
+		foreach ( PuzzlePiece p in JigsawGame.Current.PieceEntities )
+		{
+			p.PhysicsEnabled = true;
+		}
 
 		GameState = new PuzzlingGameState();
 
@@ -62,7 +75,7 @@ public partial class JigsawGame
 	/// <summary>
 	/// place puzzle pieces on the nav mesh.
 	/// </summary>
-	public async void PositionPuzzlePiecesOnNavMesh()
+	public async Task PositionPuzzlePiecesOnNavMesh()
 	{
 		// Only do this on server.
 		if ( Game.IsClient ) return;
@@ -80,75 +93,27 @@ public partial class JigsawGame
 		NavArea a = areas.FirstOrDefault();
 		Vector3 center = NavMesh.GetClosestPoint( areas.FirstOrDefault().Center ).Value;
 
-		/*
-		// Place piece //
-		Vector3[] path;
+		DebugOverlay.Sphere( center, 64, Color.Yellow, 64 );
 
-		for ( int i = 0; i < count; i++ )
-		{
-			// Get random nav area
-			a = areas.OrderBy( ( x ) => Guid.NewGuid() ).FirstOrDefault();
-			Vector3 pos = a.FindRandomSpot();
-
-			//// path
-
-			try
-			{
-				path = await Task.RunInThreadAsync( () => NavMesh.BuildPath( pos, center ) );
-
-				// path didn't reach center
-				if ( (path[path.Length-1] - center).Length > 64 )
-				{
-					i--;
-					continue;
-				}
-
-
-				//float dst = (path[path.Length - 1] - center).Length;
-
-			}
-			catch
-			{
-				i--;
-				continue;
-			}
-
-			if ( JigsawGame.Current.Debug )
-			{
-				Color c = Color.Random;
-				path.DrawAsPath( c, 100 );
-			}
-
-			Current.PieceEntities[i].Position = pos;
-			Current.PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
-			Current.PieceEntities[i].EnableDrawing = true;
-
-		}
-		*/
-
+		// Place pieces //
 		NavPath pth;
-
-		// Place piece //
 		for ( int i = 0; i < count; i++ )
 		{
+
 			// Get random nav area
 			a = areas.OrderBy( ( x ) => Guid.NewGuid() ).FirstOrDefault();
-			Vector3 pos = a.FindRandomSpot();
-
-			//// path
+			Vector3 pos = a.FindRandomConnectedPoint( center, NavAgentHull.Agent1, 4096 );
 
 			try
 			{
-				pth = NavMesh.PathBuilder( pos )
-				.WithMaxClimbDistance( 24 )
-				.WithMaxDropDistance( 24 )
-				.WithAgentHull( NavAgentHull.Agent1 )
-				.WithStepHeight( 12 )
-				.WithNoOptimization()
-				.WithPartialPaths()
-				.Build( center ) ;
 
-				if((pth.Segments.Last().Position - center).Length > 64)
+				pth = await Task.RunInThreadAsync( () => NavMesh.PathBuilder( pos )
+				.WithPartialPaths()
+				.WithMaxClimbDistance(32)
+				.WithMaxDropDistance(32)
+				.Build( center ) );
+
+				if ((pth.Segments.Last().Position - center).Length > 30)
 				{
 					i--;
 					continue;
@@ -164,11 +129,16 @@ public partial class JigsawGame
 			if ( JigsawGame.Current.Debug )
 			{
 				Color c = Color.Random;
-				pth.Draw( c, 100 );
+				pth.Draw( c, 20 );
 			}
 
-			Current.PieceEntities[i].Position = pos;
-			Current.PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+			PlacePiece( pos );
+
+			void PlacePiece( Vector3 p )
+			{
+				Current.PieceEntities[i].Position = p;
+				Current.PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+			}
 
 		}
 
@@ -179,7 +149,7 @@ public partial class JigsawGame
 
 	}
 
-	public void SpawnPuzzlePiecesInGrid(float spacing = 8f)
+	public void SpawnPuzzlePieces(float spacing = 8f)
 	{
 		// Only do this on server.
 		if ( Game.IsClient ) return;
@@ -201,7 +171,8 @@ public partial class JigsawGame
 				// Place piece //
 				Vector3 spawnArea = new Vector2( PieceCountX * (PieceScale + spacing), PieceCountY * (PieceScale + spacing) );
 				Vector3 p = new Vector3( ent.X * (PieceScale + spacing), ent.Y * (PieceScale + spacing), 512 ) - (spawnArea / 2);
-				ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Up * 4);
+				//ent.Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Down * 512);
+				ent.Position = NavMesh.GetNavAreas().FirstOrDefault().Center + Vector3.Up * 4;
 			}
 		}
 	}
@@ -236,7 +207,7 @@ public partial class JigsawGame
 
 	public void LoadClientPieces()
 	{
-		Log.Warning( "loading pieces on client..." );
+		Log.Info( "Loading client puzzle pieces..." );
 
 		// Load materials.
 		//await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
