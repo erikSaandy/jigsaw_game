@@ -26,13 +26,16 @@ public static partial class PieceManager
 
 	public static void ConnectRoots( IClient cl, PuzzlePiece piece, PuzzlePiece other )
 	{
-		if ( Game.IsClient ) return;
+		if(Game.IsClient)
+		{
+			return;
+		}
 
 		// connect all pieces.
 		PuzzlePiece thisRoot = piece.GetRoot();
 		PuzzlePiece otherRoot = other.GetRoot();
 
-		ClearActivePiece(cl);
+		ClearActivePiece( cl );
 
 		#region Piece Side Checks
 
@@ -62,8 +65,12 @@ public static partial class PieceManager
 
 		// COLLAPSE GROUP and PARENT
 
+		thisRoot.FreezeGroup();
+		otherRoot.FreezeGroup();
+
 		// This code seems redundant, but doing it any other way causes weird behaviour. I'm just glad it works...
 		PuzzlePiece[] group = thisRoot.GetGroupPieces().Where( x => x != thisRoot ).ToArray();
+
 		thisRoot.Parent = otherRoot;
 		thisRoot.SetRoot( otherRoot );
 		thisRoot.Rotation = Rotation.Identity;
@@ -84,12 +91,16 @@ public static partial class PieceManager
 		}
 
 		// Transfer Collision boxes
+
 		IEnumerable<PhysicsShape> shapes = thisRoot.PhysicsBody.Shapes;
 		foreach ( PhysicsShape s in shapes )
 		{
 			otherRoot.PhysicsBody.AddCloneShape( s );
 		}
+
 		thisRoot.PhysicsClear();
+
+		otherRoot.FreezeGroup( false );
 
 		// Check completion state of the puzzle.
 		JigsawManager.CheckPuzzleCompletionRelative( otherRoot );
@@ -137,6 +148,7 @@ public static partial class PieceManager
 			return false;
 
 		}
+
 	}
 
 	public static void SetActivePiece( IClient cl, PuzzlePiece piece, Vector3 hitPosition )
@@ -161,12 +173,10 @@ public static partial class PieceManager
 
 	public static void ClearActivePiece(IClient cl)
 	{
+
 		JigsawPawn pawn = cl.Pawn as JigsawPawn;
 
-		if ( Game.IsServer )
-		{
-			pawn.ActivePiece?.EnableGroupPhysics( true );
-		}
+		pawn.ActivePiece?.EnableGroupPhysics( true );
 
 		pawn.HoldSplashParticle?.Destroy();
 

@@ -7,7 +7,7 @@ namespace Jigsaw;
 partial class Fists : Weapon
 {
 	public override string ViewModelPath => "models/first_person/jigsaw_first_person_arms.vmdl";
-	public override string WorldModelPath => "";
+	public override string WorldModelPath => "models/citizen/jigsaw_citizen.vmdl";
 
 	public override float PrimaryAttackDelay => 0.9f;
 	public override float SecondaryAttackDelay => 0.9f;
@@ -52,6 +52,7 @@ partial class Fists : Weapon
 
 	public override void Simulate( IClient cl )
 	{
+
 		if ( Owner is not JigsawPawn ) return;
 		if ( Input.StopProcessing ) return;
 
@@ -61,6 +62,7 @@ partial class Fists : Weapon
 
 		if ( Input.Pressed( "attack1" ) )
 		{
+			//JigsawGame.Current.LoadClientPieces();
 
 			TraceResult tr = Trace.Ray( pawn.EyePosition, pawn.EyePosition + (pawn.EyeRotation.Forward * JigsawPawn.MaxHeldDistance) )
 				.UseHitboxes()
@@ -79,7 +81,7 @@ partial class Fists : Weapon
 		{
 			SimulateTK( cl );
 		}
-		else
+		else if ( TKActive )
 		{
 			PieceManager.ClearActivePiece( cl );
 			EnableTK( false );
@@ -96,7 +98,9 @@ partial class Fists : Weapon
 
 	public override void SimulateAnimator( CitizenAnimationHelper anim )
 	{
-		anim.HoldType = CitizenAnimationHelper.HoldTypes.Punch;
+		int holdtype = TKActive == true ? 8 : 5;
+		//anim.HoldType = (CitizenAnimationHelper.HoldTypes)holdtype;
+		(Owner as JigsawPawn)?.SetAnimParameter( "holdtype", holdtype );
 		anim.Handedness = CitizenAnimationHelper.Hand.Both;
 		anim.AimBodyWeight = 1.0f;
 	}

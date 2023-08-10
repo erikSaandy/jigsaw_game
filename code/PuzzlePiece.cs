@@ -86,21 +86,21 @@ public partial class PuzzlePiece : ModelEntity
 		this.Y = y;
 		Index = Math2d.ArrayIndex( x, y, JigsawGame.Current.PieceCountX, JigsawGame.Current.PieceCountY );
 		Tags.Add( "puzzlepiece" );
-		Name = "PuzzlePiece" + " (" + X + ", " + Y + ")"; 
-		
+		Name = "PuzzlePiece" + " (" + X + ", " + Y + ")";
+
 		// Generate
+
+		Position = Vector3.Zero;
 
 		GetBoundingBox(X, Y, out Vector3 mins, out Vector3 maxs );
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
 
 		//GeneratePipCollision();
 
-		PhysicsEnabled = true;
+		PhysicsEnabled = false;
 		UsePhysicsCollision = true;
 		EnableSolidCollisions = true;
 		EnableTraceAndQueries = true;
-
-		Position = Vector3.Zero;
 
 	}
 
@@ -112,11 +112,11 @@ public partial class PuzzlePiece : ModelEntity
 		SetupPhysicsFromOBB( PhysicsMotionType.Dynamic, mins, maxs );
 
 		//GeneratePipCollision();
+
 	}
 
 	public static void GetBoundingBox( int X, int Y, out Vector3 mins, out Vector3 maxs )
 	{
-		// TODO: Edge pieces are inaccurate, and pips are not accounted for.
 
 		Vector2 negate = new Vector2( (0.5f + X) * JigsawGame.PieceScale, (0.5f + Y) * JigsawGame.PieceScale );
 
@@ -134,26 +134,7 @@ public partial class PuzzlePiece : ModelEntity
 
 		mins = new Vector3( left, bottom, -(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2) );
 		maxs = new Vector3( right, top, (JigsawGame.PieceScale * JigsawGame.PieceThickness / 2) );
-		Log.Error( "mins: ( " + mins.x + ", " + mins.y + " ), maxs: ( " + maxs.x + ", " + maxs.y + " )" );
-
-		/* OLD
-		 
-		float wMin = JigsawGame.GetWobbleAt( X * JigsawGame.PieceScale, Y * JigsawGame.PieceScale );
-		float wMax = JigsawGame.GetWobbleAt( (X+1) * JigsawGame.PieceScale, (Y+1) * JigsawGame.PieceScale );
-
-		mins = new Vector3(
-			-(JigsawGame.PieceScale / 2) + ((X == 0) ? 0 : wMin),
-			-(JigsawGame.PieceScale / 2) + ((Y == 0) ? 0 : wMin),
-			-(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2)
-		);
-
-		maxs = new Vector3(
-			(JigsawGame.PieceScale/2) + ((X == JigsawGame.Current.PieceCountX - 1) ? 0 : wMax),
-			(JigsawGame.PieceScale/2) + ((Y == JigsawGame.Current.PieceCountY - 1) ? 0 : wMax),
-			(JigsawGame.PieceScale * JigsawGame.PieceThickness / 2)
-		);
-
-		*/
+		//Log.Error( "mins: ( " + mins.x + ", " + mins.y + " ), maxs: ( " + maxs.x + ", " + maxs.y + " )" );
 
 	}
 
@@ -163,7 +144,8 @@ public partial class PuzzlePiece : ModelEntity
 		{
 			if ( c != Vector2.Zero )
 			{
-				PhysicsBody?.AddBoxShape( c, Rotation.Identity, (new Vector3( JigsawGame.PipScale, JigsawGame.PipScale, JigsawGame.PieceThickness ) * JigsawGame.PieceScale / 2) );
+				PhysicsShape shape = PhysicsBody?.AddBoxShape( c, Rotation.Identity, (new Vector3( JigsawGame.PipScale, JigsawGame.PipScale, JigsawGame.PieceThickness ) * JigsawGame.PieceScale / 2) );
+				shape.DisableAllCollision();
 			}
 		}
 	}
@@ -227,20 +209,12 @@ public partial class PuzzlePiece : ModelEntity
 		// This is root
 
 		// Find close neighbor with active piece root.
-		FindCloseNeighbor( out neighbor );
+		if(FindCloseNeighbor( out neighbor )) { return true; }
 
-		if ( neighbor == null )
+		// Find close neighbor with pieces connected to active piece root.
+		foreach ( PuzzlePiece c in Children )
 		{
-			// Find close neighbor with pieces connected to active piece root.
-			foreach ( PuzzlePiece c in Children )
-			{
-				if ( c.FindCloseNeighbor( out neighbor ) ) { break; }
-			}
-		}
-
-		if ( neighbor != null )
-		{
-			return true;
+			if ( c.FindCloseNeighbor( out neighbor ) ) { return true; }
 		}
 
 		return false;
@@ -371,6 +345,27 @@ public partial class PuzzlePiece : ModelEntity
 	public virtual bool IsUsable( Entity user )
 	{
 		return Owner == null;
+	}
+
+	public void FreezeGroup(bool freeze = true)
+	{
+		IEnumerable<PuzzlePiece> group = GetGroupPieces();
+
+		foreach(PuzzlePiece p in group)
+		{
+			p.PhysicsEnabled = !freeze;
+
+			if ( p.PhysicsBody != null )
+			{
+				p.PhysicsBody.Enabled = !freeze;
+				p.PhysicsBody.BodyType = freeze ? PhysicsBodyType.Static : PhysicsBodyType.Dynamic;
+
+				if ( freeze )
+				{
+					p.PhysicsBody.ClearForces();
+				}
+			}
+		}
 	}
 
 }

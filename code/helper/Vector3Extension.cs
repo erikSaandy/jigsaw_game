@@ -3,16 +3,24 @@ using System;
 using static Sandbox.Material;
 using System.Runtime.CompilerServices;
 using Saandy;
+using Jigsaw;
 
-public static class EntityExtension
+public static class Vector3Extension
 {
-	public static Vector3 Up( this Sandbox.Entity entity ) => entity.Rotation * Vector3.Up;
 
-	public static Vector3 Down( this Sandbox.Entity entity ) => -entity.Up();
+	public static Vector3[] DrawAsPath(this Vector3[] path, Color c, float duration = 0, bool depthTest = true )
+	{
+		Vector3 last = path[0];
+		for ( int j = 1; j < path.Length; j++ )
+		{
 
-	public static Vector3 Right( this Sandbox.Entity entity ) => entity.Rotation * Vector3.Right;
+			DebugOverlay.Line( last, path[j], c, duration, depthTest );
 
-	public static Vector3 Left( this Sandbox.Entity entity ) => -entity.Right();
+			last = path[j];
+		}
+
+		return path;
+	}
 
 	#region SmoothDamp
 	public static Vector3 SmoothDamp( Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed )

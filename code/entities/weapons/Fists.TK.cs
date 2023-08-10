@@ -9,8 +9,9 @@ namespace Jigsaw;
 partial class Fists : Weapon
 {
 
-	void SimulateTK(IClient cl)
+	void SimulateTK( IClient cl )
 	{
+
 		JigsawPawn pawn = Owner as JigsawPawn;
 		if ( pawn.ActivePiece == null ) return;
 
@@ -24,6 +25,7 @@ partial class Fists : Weapon
 
 		if ( Game.IsServer )
 		{
+			// Move active piece
 			using ( Prediction.Off() )
 			{
 
@@ -55,18 +57,23 @@ partial class Fists : Weapon
 
 		pawn.HoldSplashParticle?.SetPosition( 1, pawn.ActivePiece.Position - pawn.HeldOffset );
 
-		if ( pawn.ActivePiece.TimeSincePickedUp > 0.5f )
+		if ( Game.IsServer )
 		{
-			if ( pawn.ActivePiece.TryConnecting( out PuzzlePiece neighbor ) )
+			using ( Prediction.Off() )
 			{
-				if ( Game.IsServer )
+				if ( pawn.ActivePiece.TimeSincePickedUp > 0.5f )
 				{
-					PieceManager.ConnectRoots(Owner.Client, pawn.ActivePiece, neighbor );
-					OnConnected( Client );
-					PieceManager.OnConnected( Client );
-				}
+					if ( pawn.ActivePiece.TryConnecting( out PuzzlePiece neighbor ) )
+					{
 
-				return;
+						// Connect pieces
+						PieceManager.ConnectRoots( Owner.Client, pawn.ActivePiece, neighbor );
+						OnConnected( Client );
+						PieceManager.OnConnected( Client );
+					}
+
+					return;
+				}
 			}
 		}
 

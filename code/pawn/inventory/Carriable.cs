@@ -31,6 +31,7 @@ public class Carriable : AnimatedEntity
 			EnableTouch = true;
 		}
 	}
+
 	/// <summary>
 	/// Create the viewmodel. You can override this in your base classes if you want
 	/// to create a certain viewmodel entity.

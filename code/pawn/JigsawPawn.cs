@@ -22,7 +22,9 @@ public partial class JigsawPawn : AnimatedEntity
 		LifeState = LifeState.Alive;
 		Health = 100;
 
-		SetModel( "models/citizen/citizen.vmdl" );
+		SetModel( "models/citizen/jigsaw_citizen.vmdl" );
+		SetAnimGraph( "models/citizen/jigsaw_citizen.vanmgrph" );
+
 		Components.Add( new MovementController() );
 		Components.Add( new FirstPersonCamera() );
 		Components.Add( new AmmoStorageComponent() );

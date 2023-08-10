@@ -25,7 +25,7 @@ public partial class JigsawGame : BaseGameManager
 {
 	[Net] public bool Debug { get; set; } = false;
 
-	public static new JigsawGame Current { get; protected set; }
+	public static JigsawGame Current { get; protected set; }
 
 	// GameState takes care of the basic game loop.
 	[Net, Change] private BaseGameState gameState { get; set; }
@@ -322,7 +322,7 @@ public partial class LoadingGameState : BaseGameState
 		{
 			LeaderInfo.Enable( To.Everyone, false );
 			Log.Info( "Loading server puzzles pieces..." );
-			JigsawGame.Current.LoadEntities();
+			JigsawGame.Current.LoadServerPieces();
 		}
 
 	}
@@ -347,6 +347,12 @@ public partial class LoadingGameState : BaseGameState
 			VotingTimer.Current.Visible = false;
 			JigsawGame.Current.LoadClientPieces();
 		}
+
+		if ( Game.IsServer )
+		{
+			JigsawGame.Current.PositionPuzzlePiecesOnNavMesh();
+		}
+
 	}
 
 }
@@ -360,6 +366,11 @@ public partial class PuzzlingGameState : BaseGameState
 		if ( Game.IsServer )
 		{
 			ChatBox.SayInformation( "This puzzle consists of " + (JigsawGame.Current.PieceCountX * JigsawGame.Current.PieceCountY) + " puzzle pieces! \rEnjoy." );
+
+			foreach(PuzzlePiece p in JigsawGame.Current.PieceEntities)
+			{
+				p.PhysicsEnabled = true;
+			}
 		}
 
 	}

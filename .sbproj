@@ -35,7 +35,8 @@
         "ladder": "Ignore",
         "water": "Trigger",
         "puzzlepiece": "Collide",
-        "player": "Collide"
+        "player": "Collide",
+        "piecepip": "Unset"
       },
       "Pairs": [
         {
@@ -111,6 +112,16 @@
         {
           "a": "solid",
           "b": "player",
+          "r": "Collide"
+        },
+        {
+          "a": "water",
+          "b": "piecepip",
+          "r": "Collide"
+        },
+        {
+          "a": "solid",
+          "b": "piecepip",
           "r": "Collide"
         }
       ]
@@ -314,6 +325,7 @@
         "PreLaunchCommand": "",
         "PostLaunchCommand": ""
       }
-    ]
+    ],
+    "TickRate": 50
   }
 }
