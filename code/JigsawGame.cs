@@ -279,7 +279,7 @@ public partial class VotingGameState : BaseGameState
 		// If someone joins during subsequent voting state, when old puzzle is still in the world...
 		// Spawn puzzle!
 
-		if ( Game.IsClient && JigsawGame.Current.PieceEntities.Count > 0 )
+		if ( Game.IsClient && JigsawGame.Current.PieceEntities?.Count > 0 )
 		{
 			JigsawGame.Current.LoadClientPieces();
 		}
@@ -366,10 +366,9 @@ public partial class PuzzlingGameState : BaseGameState
 
 			foreach ( PuzzlePiece p in JigsawGame.Current.PieceEntities )
 			{
+				p.EnableDrawing = true;
 				p.PhysicsEnabled = true;
 			}
-
-			JigsawGame.Current.PositionPuzzlePiecesOnNavMesh();
 
 		}
 

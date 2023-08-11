@@ -100,7 +100,9 @@ public partial class PuzzlePiece : ModelEntity
 
 		//GeneratePipCollision();
 
+		EnableDrawing = false;
 		PhysicsEnabled = false;
+
 		UsePhysicsCollision = true;
 		EnableSolidCollisions = true;
 		EnableTraceAndQueries = true;
