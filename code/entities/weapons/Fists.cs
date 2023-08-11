@@ -12,8 +12,6 @@ partial class Fists : Weapon
 	public override float PrimaryAttackDelay => 0.9f;
 	public override float SecondaryAttackDelay => 0.9f;
 
-	bool TKActive = false;
-
 	public override bool CanReloadPrimary()
 	{
 		return false;
@@ -64,7 +62,7 @@ partial class Fists : Weapon
 		{
 			//JigsawGame.Current.LoadClientPieces();
 
-			TraceResult tr = Trace.Ray( pawn.EyePosition, pawn.EyePosition + (pawn.EyeRotation.Forward * 128) )
+			TraceResult tr = Trace.Ray( pawn.EyePosition, pawn.EyePosition + (pawn.EyeRotation.Forward * JigsawPawn.MaxHeldDistance) )
 				.UseHitboxes()
 				.WithTag( "puzzlepiece" )
 				.Ignore( this )
@@ -77,11 +75,11 @@ partial class Fists : Weapon
 				EnableTK();
 			}
 		}
-		else if ( TKActive && Input.Down( "attack1" ) )
+		else if ( pawn.TKActive && Input.Down( "attack1" ) )
 		{
 			SimulateTK( cl );
 		}
-		else if ( TKActive )
+		else if ( pawn.TKActive )
 		{
 			PieceManager.ClearActivePiece( cl );
 			EnableTK( false );
@@ -93,12 +91,14 @@ partial class Fists : Weapon
 
 	public override bool CanPrimaryAttack()
 	{
-		return (Automatic ? Input.Down( "Attack1" ) : Input.Pressed( "Attack1" )) && TimeSincePrimaryAttack >= PrimaryAttackDelay && !TKActive;
+		JigsawPawn pawn = Owner as JigsawPawn;
+		return (Automatic ? Input.Down( "Attack1" ) : Input.Pressed( "Attack1" )) && TimeSincePrimaryAttack >= PrimaryAttackDelay && !pawn.TKActive;
 	}
 
 	public override void SimulateAnimator( CitizenAnimationHelper anim )
 	{
-		int holdtype = TKActive == true ? 8 : 5;
+		JigsawPawn pawn = Owner as JigsawPawn;
+		int holdtype = pawn.TKActive == true ? 8 : 5;
 		//anim.HoldType = (CitizenAnimationHelper.HoldTypes)holdtype;
 		(Owner as JigsawPawn)?.SetAnimParameter( "holdtype", holdtype );
 		anim.Handedness = CitizenAnimationHelper.Hand.Both;
@@ -107,8 +107,9 @@ partial class Fists : Weapon
 
 	public void EnableTK(bool enable = true)
 	{
+		JigsawPawn pawn = Owner as JigsawPawn;
+		pawn.TKActive = enable;
 		ViewModelEntity?.SetAnimParameter( "b_tk", enable );
-		TKActive = enable;
 	}
 
 	public override void CreateViewModel()

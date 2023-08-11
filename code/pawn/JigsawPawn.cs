@@ -7,7 +7,8 @@ namespace Jigsaw;
 
 public partial class JigsawPawn : AnimatedEntity
 {
-	[Net] public int Connections { get; set; }
+
+	[Net] public bool TKActive { get; set; } = false;
 
 	/// <summary>
 	/// Called when the entity is first created 

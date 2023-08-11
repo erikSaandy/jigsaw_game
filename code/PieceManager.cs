@@ -30,14 +30,13 @@ public static partial class PieceManager
 
 	public static void ConnectRoots( IClient cl, PuzzlePiece piece, PuzzlePiece other )
 	{
-		if(Game.IsClient)
-		{
-			return;
-		}
+		if(Game.IsClient) { return;	}
 
 		// connect all pieces.
 		PuzzlePiece thisRoot = piece.GetRoot();
 		PuzzlePiece otherRoot = other.GetRoot();
+
+		JigsawPawn pawn = cl.Pawn as JigsawPawn;
 
 		ClearActivePiece( cl );
 
@@ -77,9 +76,16 @@ public static partial class PieceManager
 
 		thisRoot.Parent = otherRoot;
 		thisRoot.SetRoot( otherRoot );
-		thisRoot.Rotation = Rotation.Identity;
+
+		Vector3 dir = new Vector3( (thisRoot.X - otherRoot.X), (thisRoot.Y - otherRoot.Y) );
 		thisRoot.LocalRotation = Rotation.Identity;
-		thisRoot.LocalPosition = new Vector3( (thisRoot.X - otherRoot.X) * JigsawGame.PieceScale, (thisRoot.Y - otherRoot.Y) * JigsawGame.PieceScale );
+		thisRoot.LocalPosition = new Vector3( dir.x * JigsawGame.PieceScale, dir.y * JigsawGame.PieceScale );
+
+		Rotation otherRot = otherRoot.PhysicsBody.Rotation;
+		otherRoot.PhysicsBody.Rotation = Rotation.Identity;
+		thisRoot.PhysicsBody.Rotation = Rotation.Identity;
+		thisRoot.PhysicsBody.Position = otherRoot.PhysicsBody.Position + new Vector3( dir.x * JigsawGame.PieceScale, dir.y * JigsawGame.PieceScale ); ;
+		thisRoot.PhysicsBody.Rotation = Rotation.Identity;
 
 		foreach ( PuzzlePiece p in group )
 		{
@@ -97,12 +103,10 @@ public static partial class PieceManager
 		// Transfer Collision boxes
 
 		IEnumerable<PhysicsShape> shapes = thisRoot.PhysicsBody.Shapes;
-		foreach ( PhysicsShape s in shapes )
-		{
-			otherRoot.PhysicsBody.AddCloneShape( s );
-		}
-
+		foreach ( PhysicsShape s in shapes ) { otherRoot.PhysicsBody.AddCloneShape( s ); }
 		thisRoot.PhysicsClear();
+
+		otherRoot.PhysicsBody.Rotation = otherRot;
 
 		otherRoot.FreezeGroup( false );
 

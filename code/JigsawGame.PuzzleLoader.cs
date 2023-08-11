@@ -205,7 +205,7 @@ public partial class JigsawGame
 		Log.Info( "Loading client puzzle pieces..." );
 		
 		// Load materials.
-		await Current.Task.RunInThreadAsync(() => Current.LoadPuzzleMaterials());
+		await Current.LoadPuzzleMaterials();
 
 		await Task.Delay( 1000 );
 
@@ -230,7 +230,7 @@ public partial class JigsawGame
 	/// </summary>
 	public async Task LoadPuzzleMaterials()
 	{
-		PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
+		PuzzleTexture = await ImageLoader.LoadWebImage( PuzzleTextureURL );
 		//PuzzleTexture = await Task.RunInThreadAsync( () => ImageLoader.LoadWebImage( PuzzleTextureURL ) );
 
 		// Only load backside mat if it hasn't been loaded on client yet.

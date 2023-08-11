@@ -65,7 +65,6 @@ partial class Fists : Weapon
 				{
 					if ( pawn.ActivePiece.TryConnecting( out PuzzlePiece neighbor ) )
 					{
-
 						// Connect pieces
 						PieceManager.ConnectRoots( Owner.Client, pawn.ActivePiece, neighbor );
 						OnConnected( Client );
