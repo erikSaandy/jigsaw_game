@@ -22,7 +22,7 @@ public partial class JigsawManager
 	}
 
 	/// <summary>
-	/// The player wants to enable the devcam. Probably shouldn't allow this
+	/// The player wants to enable the devcam.Probably shouldn't allow this
 	/// unless you're in a sandbox mode or they're a dev.
 	/// </summary>
 	public virtual void DoPlayerDevCam( IClient client )

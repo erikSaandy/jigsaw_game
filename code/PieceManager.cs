@@ -10,14 +10,18 @@ public static partial class PieceManager
 	// This looks dumb and probably is dumb, but clients don't reliably call this function.
 	public static void OnConnected( IClient cl )
 	{
-		OnConnectedClient( To.Single( cl ) );
+		if ( Game.IsServer )
+		{
+			cl.SetInt( "connections", cl.GetInt("connections") + 1 );
+			OnConnectedClient( To.Single( cl ) );
+		}
 	}
 
 	[ConCmd.Client( "on_connected_client", CanBeCalledFromServer = true )]
 	public static void OnConnectedClient()
 	{
 		if ( Game.LocalClient == ConsoleSystem.Caller )
-		{
+		{	
 			Sandbox.Services.Stats.Increment( "piece_connections", 1 );
 		}
 

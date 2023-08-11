@@ -10,7 +10,7 @@ namespace Jigsaw;
 public partial class JigsawPawn : AnimatedEntity
 {
 	public readonly string[] CollisionTags = { "default", "solid", "player" };
-	public static readonly int MaxHeldDistance = 128;
+	public static readonly int MaxHeldDistance = 98;
 
 	[Net, Predicted] public PuzzlePiece ActivePiece { get; set; } = null;
 

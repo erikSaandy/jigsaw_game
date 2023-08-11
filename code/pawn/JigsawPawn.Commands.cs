@@ -25,7 +25,7 @@ public partial class JigsawPawn
 	{
 		if ( ConsoleSystem.Caller.Pawn is JigsawPawn basePlayer )
 		{
-			basePlayer.TakeDamage( new DamageInfo { Damage = basePlayer.Health * 99 } );
+			basePlayer.OnKilled();
 		}
 	}
 
@@ -56,6 +56,7 @@ public partial class JigsawPawn
 	[ConCmd.Server( "devcam" )]
 	static void DevcamCommand()
 	{
+		Log.Error( "hum" );
 		if ( ConsoleSystem.Caller == null ) return;
 
 		JigsawManager.Current?.DoPlayerDevCam( ConsoleSystem.Caller );

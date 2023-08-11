@@ -61,7 +61,7 @@ public partial class JigsawGame
 		SpawnPuzzlePieces();
 		await PositionPuzzlePiecesOnNavMeshAsync();
 
-		await Task.Delay( 1000 );
+		await Task.Delay( 2000 );
 
 		GameState = new PuzzlingGameState();
 
@@ -205,16 +205,16 @@ public partial class JigsawGame
 		Log.Info( "Loading client puzzle pieces..." );
 		
 		// Load materials.
-		//await Task.RunInThreadAsync( () => LoadPuzzleMaterials() );
 		await Current.Task.RunInThreadAsync(() => Current.LoadPuzzleMaterials());
+
+		await Task.Delay( 1000 );
 
 		// Generate meshes.
 		GeneratePuzzle();
-		//Current.GeneratePuzzle();
 
-		for ( int i = 0; i < Current.PieceEntities.Count; i++ )
+		foreach(PuzzlePiece p in Current.PieceEntities)
 		{
-			Current.PieceEntities[i].GenerateClient();
+			p.GenerateClient();
 		}
 
 		Log.Info( "Loaded puzzle meshes on client!" );

@@ -7,7 +7,7 @@ namespace Jigsaw;
 partial class Fists : Weapon
 {
 	public override string ViewModelPath => "models/first_person/jigsaw_first_person_arms.vmdl";
-	public override string WorldModelPath => "models/citizen/jigsaw_citizen.vmdl";
+	public override string WorldModelPath => "";
 
 	public override float PrimaryAttackDelay => 0.9f;
 	public override float SecondaryAttackDelay => 0.9f;
@@ -64,7 +64,7 @@ partial class Fists : Weapon
 		{
 			//JigsawGame.Current.LoadClientPieces();
 
-			TraceResult tr = Trace.Ray( pawn.EyePosition, pawn.EyePosition + (pawn.EyeRotation.Forward * JigsawPawn.MaxHeldDistance) )
+			TraceResult tr = Trace.Ray( pawn.EyePosition, pawn.EyePosition + (pawn.EyeRotation.Forward * 128) )
 				.UseHitboxes()
 				.WithTag( "puzzlepiece" )
 				.Ignore( this )

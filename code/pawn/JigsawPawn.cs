@@ -7,12 +7,14 @@ namespace Jigsaw;
 
 public partial class JigsawPawn : AnimatedEntity
 {
+	[Net] public int Connections { get; set; }
 
 	/// <summary>
 	/// Called when the entity is first created 
 	/// </summary>
 	public override void Spawn()
 	{
+
 		Event.Run( "Player.PreSpawn", this );
 		base.Spawn();
 		Velocity = Vector3.Zero;
@@ -65,6 +67,14 @@ public partial class JigsawPawn : AnimatedEntity
 		Event.Run( "Player.PreRespawn", this );
 		Spawn();
 		Event.Run( "Player.PostRespawn", this );
+	}
+
+	public async void RespawnDelayed(int ms)
+	{
+		if ( Game.IsClient ) return;
+
+		await Task.Delay( ms );
+		Respawn();
 	}
 
 	public virtual void MoveToSpawnpoint()
@@ -178,16 +188,22 @@ public partial class JigsawPawn : AnimatedEntity
 
 		EnableAllCollisions = false;
 		EnableDrawing = false;
+
 		Inventory.DropItem( Inventory.ActiveChild );
 		foreach ( var item in Inventory.Items.ToList() )
 		{
 			Inventory.DropItem( item );
 		}
+
 		Inventory.Items.Clear();
 
 		Components.Add( new NoclipController() );
 
 		Event.Run( "Player.PostOnKilled", this );
+
+		//Respawn();
+		RespawnDelayed( 5000 );
+
 	}
 
 

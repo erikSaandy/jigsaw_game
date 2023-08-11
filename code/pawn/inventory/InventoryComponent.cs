@@ -21,6 +21,7 @@ public partial class InventoryComponent : SimulatedComponent, ISingletonComponen
 			ActiveChildInput = item;
 			return true;
 		}
+
 		return false;
 	}
 	public bool DropItem( Entity item )
