@@ -57,10 +57,9 @@ public partial class JigsawGame
 		Log.Info( "Puzzle piece count: " + PieceCountX * PieceCountY );
 
 		// Spawning entity pieces //
-		//SpawnPuzzlePiecesOnNavMesh();
 		SpawnPuzzlePieces();
-		//await PositionPuzzlePiecesOnNavMeshAsync();
-		PositionPuzzlePiecesInGrid();
+		await PositionPuzzlePiecesOnNavMeshAsync();
+		//PositionPuzzlePiecesInGrid();
 
 		await Task.Delay( 2000 );
 
