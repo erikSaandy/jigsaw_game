@@ -59,16 +59,14 @@ public partial class JigsawGame
 		// Spawning entity pieces //
 		//SpawnPuzzlePiecesOnNavMesh();
 		SpawnPuzzlePieces();
-		await PositionPuzzlePiecesOnNavMeshAsync();
+		//await PositionPuzzlePiecesOnNavMeshAsync();
+		PositionPuzzlePiecesInGrid();
 
 		await Task.Delay( 2000 );
 
 		GameState = new PuzzlingGameState();
 
 	}
-
-
-	public void PositionPuzzlePiecesOnNavMesh() { Task.RunInThreadAsync( () => PositionPuzzlePiecesOnNavMeshAsync() ); }
 
 	/// <summary>
 	/// place puzzle pieces on the nav mesh.
@@ -146,6 +144,26 @@ public partial class JigsawGame
 
 		}
 
+	}
+
+	public void PositionPuzzlePiecesInGrid( float spacing = 8f )
+	{
+		// Only do this on server.
+		if ( Game.IsClient ) return;
+
+		int count = PieceCountX * PieceCountY;
+
+		for ( int i = 0; i < count; i++ )
+		{
+			// Get x and y of piece.
+			Math2d.FlattenedArrayIndex( i, PieceCountX, out int x, out int y );
+
+			// Place piece //
+			Vector3 spawnArea = new Vector2( PieceCountX * (PieceScale + spacing), PieceCountY * (PieceScale + spacing) );
+			Vector3 p = new Vector3( Current.PieceEntities[i].X * (PieceScale + spacing), Current.PieceEntities[i].Y * (PieceScale + spacing), 512 ) - (spawnArea / 2);
+			Current.PieceEntities[i].Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Up * 4);
+
+		}
 	}
 
 	public void SpawnPuzzlePieces(float spacing = 8f)

@@ -276,71 +276,52 @@ public partial class JigsawGame
 				Vector2 GetPointAlongCurve(float t)
 				{
 
+					float dst = side.Magnitude / 4;
 					Vector2 a = pointA;
-					Vector2 b = pointA + tangentA;
-					Vector2 c = pointB + tangentB;
+					Vector2 b = pointA + (tangentA * dst);
+					Vector2 c = pointB + (tangentB * dst);
 					Vector2 d = pointB;
 
-					if ( Game.IsClient )
-					{
-						Color col = Color.Random;
 
-						switch ( sideId )
-						{
-							case 0:
-								col = Color.Red;
-								break;
-							case 1:
-								col = Color.Green;
-								break;
-							case 2:
-								col = Color.Blue;
-								break;
-							case 3:
-								col = Color.Yellow;
-								break;
-						}
+					//if ( Game.IsClient )
+					//{
+					//	Color col = Color.Random;
 
-						//DebugOverlay.Line( a, pointA + tangentA * 9, col, 35 );
-						//DebugOverlay.Line( pointB + tangentB * 9, d, col, 35 );
-					}
+					//	switch ( sideId )
+					//	{
+					//		case 0:
+					//			col = Color.Red;
+					//			break;
+					//		case 1:
+					//			col = Color.Green;
+					//			break;
+					//		case 2:
+					//			col = Color.Blue;
+					//			break;
+					//		case 3:
+					//			col = Color.Yellow;
+					//			break;
+					//	}
 
-					//return Math2d.CubicCurve( a, a + Vector2.Left * 0.2f, d + Vector2.Left * 0.2f, d, t );
+					//	{
+					//		DebugOverlay.Line( pointA, pointA + tangentA * 9, col, 35 );
+					//		DebugOverlay.Line( pointB + tangentB * 9, d, col, 35 );
+					//	}
+					//}
+
+					//Log.Error( tangentA + ", " + tangentB );
+
+
+					//return Math2d.QuadraticCurve( pointA, pointA + (side.Direction * dst / 2) + Vector2.Up * 8 , pointB, t );
 					return Math2d.QuadraticCurve( pointA, pointA + (side.Direction * side.Magnitude / 2), pointB, t );
+
+					//return Math2d.CubicCurve( a, a + Vector2.Up * 8, d + Vector2.Up * 8, d, t );
+					//return Math2d.CubicCurve( a, b, c, d, t );
 
 					//return Math2d.QuadraticCurve( pointA, pointA + (side.Direction * side.Magnitude / 2), pointB, t );
 				}
 
 				#endregion
-
-				/* old 
-
-				bool wobbleX = true;
-				if ( (piece.SideIsOnEdge( 0 ) && i == 0) || (piece.SideIsOnEdge( 2 ) && i == 2) ) { wobbleX = false; }
-
-				bool wobbleY = true;
-				if ( (piece.SideIsOnEdge( 1 ) && i == 1) || (piece.SideIsOnEdge( 3 ) && i == 3) ) { wobbleY = false; }
-
-				do
-				{
-
-					if ( needsPip && j + step >= pipStart )
-					{
-						AddPipPoints( ref piece, i, pipStart, pipEnd );
-
-						j = pipEnd + 0.1f;
-						needsPip = false;
-					}
-
-					Vector2 p = GetWobblePositionAt( side.pointA + (side.Direction * j), false, false );
-					Math2d.DrawPoint( p, Color.White, 120, 1f );
-
-					piece.polygon.contour.Add( p );
-					j += step;
-
-				} while ( j < side.Magnitude );
-
-				*/
 			}
 
 		}
@@ -386,25 +367,42 @@ public partial class JigsawGame
 		}
 
 		piece.pipCenters[sideIndex] = ((a + b + c + d) / 4) - (new Vector2(piece.x, piece.y) * PieceScale) - (Vector2.One * (PieceScale/2));
-
 	}
 
 	public static Vector2 GetWobbleHorizontalTangent(float x, float y)
 	{
+		float dst = 0.2f;
+
 		Vector2 dir = Vector2.Right;
 		Vector2 pos = new Vector2( x, y );
-		Vector2 a = GetWobblePositionAt( pos - dir * 0.2f );
-		Vector2 b = GetWobblePositionAt( pos + dir * 0.2f );
-		return (b - a).Normal;
+		Vector2 a = GetWobbleAt( pos - (dir * dst / 2) );
+		Vector2 b = GetWobbleAt( pos + (dir * dst / 2) );
+
+		float adj = dst;
+		float opp = ( b - a ).Length;
+		float rad = MathF.Atan( opp / adj );
+		float deg = rad * Math2d.Rad2Deg;
+		Vector2 tangent = new Vector2( MathF.Sin( deg ), MathF.Cos( deg ) );
+
+		return tangent;
 	}
 
 	public static Vector2 GetWobbleVerticalTangent( float x, float y )
 	{
+		float dst = 0.2f;
+
 		Vector2 dir = Vector2.Up;
 		Vector2 pos = new Vector2( x, y );
-		Vector2 a = GetWobblePositionAt( pos - dir * 0.2f );
-		Vector2 b = GetWobblePositionAt( pos + dir * 0.2f );
-		return (b - a).Normal;
+		Vector2 a = GetWobbleAt( pos - (dir * dst / 2) );
+		Vector2 b = GetWobbleAt( pos + (dir * dst / 2) );
+
+		float adj = dst;
+		float opp = (b - a).Length;
+		float rad = MathF.Atan( opp / adj );
+		float deg = rad * Math2d.Rad2Deg;
+		Vector2 tangent = new Vector2( MathF.Sin( deg ), MathF.Cos( deg ) );
+
+		return tangent;
 	}
 
 	public static Vector2 GetWobblePositionAt(Vector2 position, bool wobbleX = true, bool wobbleY = true) {
@@ -427,8 +425,35 @@ public partial class JigsawGame
 		//float my = (1f / Current.PieceCountY) * y * Current.PieceCountY;
 		//return (Noise.Perlin( mx, my, 0 ) * scale) - (scale / 2);
 
-		float v = (MathF.Sin( x / Current.PieceCountX * 1.5f ) * 1.5f) + (MathF.Sin( y / Current.PieceCountY * 1.5f ) * 1.5f);
-		return v + 0.3f;
+		Vector2 pos = new Vector2( x, y );
+		float v = GetWobbleAt( pos ).x + GetWobbleAt( pos ).y;
+		return v;
+
+	}
+
+	public static Vector2 GetWobbleAt( Vector2 pos )
+	{
+
+		//float scale = wobbleAmount * 64;
+		//float mx = (1f / Current.PieceCountX) * x * Current.PieceCountX;
+		//float my = (1f / Current.PieceCountY) * y * Current.PieceCountY;
+		//return (Noise.Perlin( mx, my, 0 ) * scale) - (scale / 2);
+
+		Vector2 v = new Vector2( (MathF.Sin( pos.x / Current.PieceCountX * 2f ) * 2.25f), (MathF.Sin( pos.y / Current.PieceCountY * 2f ) * 2.25f) );
+		return v;
+
+	}
+
+	public static Vector2 GetWobblePosAt( Vector2 pos )
+	{
+
+		//float scale = wobbleAmount * 64;
+		//float mx = (1f / Current.PieceCountX) * x * Current.PieceCountX;
+		//float my = (1f / Current.PieceCountY) * y * Current.PieceCountY;
+		//return (Noise.Perlin( mx, my, 0 ) * scale) - (scale / 2);
+
+		Vector2 v = GetWobbleAt( pos );
+		return pos + v;
 
 	}
 
