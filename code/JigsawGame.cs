@@ -25,6 +25,8 @@ public partial class JigsawGame : BaseGameManager
 {
 	[Net] public bool Debug { get; set; } = false;
 
+	[Net] public JigsawController Controller { get; set; }
+
 	public static JigsawGame Current { get; protected set; }
 
 	// GameState takes care of the basic game loop.

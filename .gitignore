@@ -19,3 +19,4 @@ code/Properties/*
 
 # Ignore screenshot folder.
 /screenshots/*
+*.psd

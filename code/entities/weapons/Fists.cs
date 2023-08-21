@@ -72,6 +72,7 @@ partial class Fists : Weapon
 			{
 				PuzzlePiece root = (tr.Entity as PuzzlePiece).GetRoot();
 				PieceManager.SetActivePiece( cl, root, tr.HitPosition );
+
 				EnableTK();
 			}
 		}
@@ -83,9 +84,10 @@ partial class Fists : Weapon
 		{
 			PieceManager.ClearActivePiece( cl );
 			EnableTK( false );
+			return;
 		}
 
-		base.Simulate( cl );
+		//base.Simulate( cl );
 
 	}
 

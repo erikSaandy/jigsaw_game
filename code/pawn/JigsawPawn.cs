@@ -1,4 +1,5 @@
 ﻿using Sandbox;
+using Sandbox.Component;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -7,6 +8,8 @@ namespace Jigsaw;
 
 public partial class JigsawPawn : AnimatedEntity
 {
+
+	public Glow glow;
 
 	[Net] public bool TKActive { get; set; } = false;
 
@@ -56,6 +59,8 @@ public partial class JigsawPawn : AnimatedEntity
 		Inventory.AddItem( TypeLibrary.Create<Entity>( "Fists" ) );
 
 		Event.Run( "Player.PostSpawn", this );
+
+		if(glow == null) glow = new Glow();
 
 	}
 

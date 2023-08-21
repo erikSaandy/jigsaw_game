@@ -38,8 +38,6 @@ public static partial class PieceManager
 
 		JigsawPawn pawn = cl.Pawn as JigsawPawn;
 
-		ClearActivePiece( cl );
-
 		#region Piece Side Checks
 
 		IEnumerable<Entity> pNew = thisRoot.GetGroupPieces();
@@ -171,7 +169,6 @@ public static partial class PieceManager
 
 		piece.EnableGroupPhysics( false );
 
-		pawn.PositionOld = pawn.ActivePiece.Position;
 		pawn.HeldOffset = piece.Position - hitPosition;
 		pawn.WantedAngleOffset = (pawn.ActivePiece.Rotation.Angles() - pawn.EyeRotation.Angles()).WithPitch( 0 ).WithRoll( 0 );
 		pawn.YawOld = pawn.ActivePiece.Rotation.Yaw();

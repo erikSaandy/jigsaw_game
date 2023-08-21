@@ -1,5 +1,6 @@
 ﻿using Saandy;
 using Sandbox;
+using Sandbox.DataModel.Game;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -58,7 +59,18 @@ public partial class JigsawGame
 
 		// Spawning entity pieces //
 		SpawnPuzzlePieces();
-		await PositionPuzzlePiecesOnNavMeshAsync();
+
+		// Get all of the spawnpoints
+		IList<PieceSpawner> spawnpoints = Entity.All.OfType<PieceSpawner>().ToList();
+
+		if ( Current.Controller != null && Current.Controller.SpawnAroundCenter || Game.Server.MapIdent == "facepunch.flatgrass")
+		{
+			PositionPuzzlePiecesAroundCenterAsync( spawnpoints );
+		}
+		else
+		{
+			await PositionPuzzlePiecesOnNavMeshAsync( spawnpoints );
+		}
 		//PositionPuzzlePiecesInGrid();
 
 		await Task.Delay( 2000 );
@@ -70,7 +82,7 @@ public partial class JigsawGame
 	/// <summary>
 	/// place puzzle pieces on the nav mesh.
 	/// </summary>
-	public async Task PositionPuzzlePiecesOnNavMeshAsync()
+	public async Task PositionPuzzlePiecesOnNavMeshAsync( IList<PieceSpawner> spawnpoints )
 	{
 		// Only do this on server.
 		if ( Game.IsClient ) return;
@@ -90,6 +102,13 @@ public partial class JigsawGame
 		int tries = 0;
 		for ( int i = 0; i < count; i++ )
 		{
+
+			// Populate spawners first.
+			if(spawnpoints.Count > 0)
+			{
+				PlacePieceOnSpawner( PieceEntities[i], ref spawnpoints );
+				continue;
+			}
 
 			// Get random nav area
 			a = areas.OrderBy( ( x ) => Guid.NewGuid() ).FirstOrDefault();
@@ -145,6 +164,58 @@ public partial class JigsawGame
 
 	}
 
+	/// <summary>
+	/// place puzzle pieces on the nav mesh.
+	/// </summary>
+	public void PositionPuzzlePiecesAroundCenterAsync( IList<PieceSpawner> spawnpoints )
+	{
+		// Only do this on server.
+		if ( Game.IsClient ) return;
+		if ( PieceEntities == null ) return;
+
+		int count = PieceCountX * PieceCountY;
+
+		//List<PieceSpawner> spawners = Entity.All.OfType<PieceSpawner>().ToList();
+		IEnumerable<NavArea> areas = NavMesh.GetNavAreas();
+		NavArea a = areas.FirstOrDefault();
+		Vector3 center = a.Center;
+
+		if ( Current.Debug ) { DebugOverlay.Sphere( center, 64, Color.Yellow, 64 ); }
+
+		// Place pieces //
+		for ( int i = 0; i < count; i++ )
+		{
+
+			// Populate spawners first.
+			if ( spawnpoints.Count > 0 )
+			{
+				PlacePieceOnSpawner( PieceEntities[i], ref spawnpoints );
+				continue;
+			}
+
+			// Get random nav area
+			a = areas.OrderBy( ( x ) => Guid.NewGuid() ).FirstOrDefault();
+
+			float angle = Rand.Next( 0, 3600 ) / 10f;
+			float dst = Rand.Next( 0, 20480 ) / 10f;
+			Vector3 dir = new Vector3( MathF.Sin( angle ), MathF.Cos( angle ), 0 );
+
+			Vector3 pos = dir * dst + (Vector3.Up * Rand.Next( 0, 512 ));
+			pos = NavMesh.GetClosestPoint( pos ).Value;
+
+			PlacePiece( pos );
+
+			void PlacePiece( Vector3 p )
+			{
+
+				PieceEntities[i].Position = p + Vector3.Up * 16;
+				PieceEntities[i].Rotation = new Rotation( 0, 0, 180, Rand.Next( 0, 360 ) );
+			}
+
+		}
+
+	}
+
 	public void PositionPuzzlePiecesInGrid( float spacing = 8f )
 	{
 		// Only do this on server.
@@ -163,6 +234,19 @@ public partial class JigsawGame
 			Current.PieceEntities[i].Position = Trace.Ray( p, p + Vector3.Down * 1024 ).StaticOnly().Run().EndPosition + (Vector3.Up * 4);
 
 		}
+	}
+
+	public void PlacePieceOnSpawner(PuzzlePiece piece, ref IList<PieceSpawner> spawners )
+	{
+		// chose a random one
+		spawners = spawners.OrderBy( x => Guid.NewGuid() ).ToList();
+		PieceSpawner randomSpawnPoint = spawners.First();
+
+		piece.Position = randomSpawnPoint.Position;
+		piece.Rotation = randomSpawnPoint.Rotation;
+
+		spawners.RemoveAt( 0 );
+
 	}
 
 	public void SpawnPuzzlePieces(float spacing = 8f)
@@ -188,6 +272,8 @@ public partial class JigsawGame
 			ent.Position = -Vector3.One*10000;
 		}
 	}
+
+
 
 	/// <summary>
 	/// Spawn puzzle pieces using map defined spawn points.

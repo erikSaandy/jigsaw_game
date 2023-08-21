@@ -4,14 +4,15 @@ using System.Linq;
 using Saandy;
 using System.Collections.Generic;
 using static Sandbox.CitizenAnimationHelper;
+using Sandbox.Component;
 
 namespace Jigsaw;
 
 public partial class PuzzlePiece : ModelEntity
 {
+
 	private readonly int ConnectionDistance = 2;
 	private readonly float DotThreshold = 0.90f;
-
 
 	[Net] private PuzzlePiece rootPiece { get; set; } = null;
 	public PuzzlePiece RootPiece => GetRoot();

@@ -35,6 +35,7 @@ partial class Fists : Weapon
 				pawn.PositionOld = pawn.ActivePiece.Position;
 				pawn.PositionNew = Vector3.SmoothDamp( pawn.ActivePiece.Position, pawn.ActivePiece.Position + velocity, ref pawn.DampVelocity, pawn.SmoothTime, Time.Delta * 2 );
 				velocity = pawn.PositionNew - pawn.PositionOld;
+				Log.Error( velocity );
 				pawn.ActivePiece.Velocity = velocity * 100;
 
 				//rot

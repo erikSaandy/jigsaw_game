@@ -17,7 +17,8 @@ public partial class JigsawGame
 	public static readonly int BacksideUVTiling = 8;
 
 	public static readonly float PieceThickness = 0.12f;
-	public static readonly int PieceScale = 24;
+
+	public static int PieceScale = 24;
 	public static readonly float PipScale = 0.35f;
 
 	private static readonly int PipPointCount = 24;
@@ -44,6 +45,21 @@ public partial class JigsawGame
 
         if (mesher == null)
             mesher = new MeshBuilder();
+
+		if ( Game.IsServer )
+		{
+			// Get Piece scale
+			Current.Controller = Entity.All.OfType<JigsawController>().FirstOrDefault();
+			if ( Controller != null )
+			{
+				PieceScale = Math.Clamp( Current.Controller.PieceScale, 8, 64 );
+			}
+			else
+			{
+				// Just to simplify things. Use controller standard settings.
+				Controller = new JigsawController();
+			}
+		}
 
 		GetDimensions( PuzzleTexture, out int pc );
 

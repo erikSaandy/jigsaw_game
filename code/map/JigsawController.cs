@@ -13,12 +13,16 @@ namespace Jigsaw;
 //[EditorSprite( "icons/jigsaw_controller/jigsaw_controller" )]
 [Library( "jigsaw_controller" ), HammerEntity]
 [Title( "Jigsaw Controller" ), Category( "Jigsaw" ), Icon( "place" )]
+//[EditorSprite( "editor/icon_jigsaw_controller.vmat" )]
 public class JigsawController : Entity
 {
 
 	
 	[Property( Name = "piece_scale", Title = "Puzzle Piece Scale" )]
-	public int PieceScale { get; set; } = 32;
+	public int PieceScale { get; set; } = 24;
+
+	[Property( "Spawn puzzle pieces pround the center of the map?", Name = "spawn_around_center", Title = "Spawn Around Center" )]
+	public bool SpawnAroundCenter { get; set; } = false;
 
 	public override void Spawn()
 	{
